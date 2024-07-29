@@ -1,0 +1,17 @@
+
+import os, os.path, pandas as pd
+from pprint import pprint
+
+configfile: 'config/config.yaml'
+include: 'rules/openfold.smk'
+
+def read_sequences():
+    with open(config['sequences']) as fh:
+        sequences = fh.read().splitlines()
+    return sequences
+
+rule all:
+    input:
+        expand(workpath('fasta_dir/{sequence}.fasta'), sequence=read_sequences())
+
+print(config['uniprot_database_path'])
