@@ -12,6 +12,8 @@ def read_sequences():
 
 rule all:
     input:
-        expand(workpath('fasta_dir/{sequence}.fasta'), sequence=read_sequences())
-
-print(config['uniprot_database_path'])
+        #expand(workpath('fasta_dir/{sequence}.fasta'), sequence=read_sequences()),
+        #expand(workpath('precompute_alignments/{sequence}/sstat.tsv'), sequence=read_sequences()),
+        #workpath('run_multimer/O00244,O00244/sstat.tsv'),
+        #./openfold-eu --config sequences='results/tubb/tubb.txt' --rerun-triggers input --dry-run
+        expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),

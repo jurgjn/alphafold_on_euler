@@ -3,7 +3,6 @@ cluster-generic-submit-cmd:
   mkdir -p .snakemake_output/{rule} &&
   sbatch
     --account={resources.account}
-    --partition={resources.partition}
     --job-name=smk-{rule}-{wildcards}
     --ntasks={threads}
     --mem-per-cpu=`expr {resources.mem_mb} / {threads}`
@@ -20,26 +19,17 @@ set-threads:
   - run_pretrained_openfold_multimer=8
 default-resources:
   - account=es_biol
-  - partition=es_biol
   - runtime=1h
   - mem_mb=1024
   - disk_mb=1024
   - xtra_args=''
 set-resources:
-  - repairpdb:mem_mb=4096
-  - repairpdb:disk_mb=4096
-  - repairpdb:runtime=2h
-  - pssm:mem_mb=4096
-  - pssm:disk_mb=4096
-  #- pssm:runtime=22h - dynamic
   - precompute_alignments:mem_mb=131072
   - precompute_alignments:disk_mb=131072
-  #- precompute_alignments:runtime=1d - dynamic
-  - run_pretrained_openfold_multimer:mem_mb=131072
-  - run_pretrained_openfold_multimer:disk_mb=131072
-  #- run_pretrained_openfold_multimer:runtime=1d - dynamic
-  - run_pretrained_openfold_multimer:xtra_args='--gpus=rtx_4090:1 --gres=gpumem:16g'
-restart-times: 3
+  - run_multimer:mem_mb=131072
+  - run_multimer:disk_mb=131072
+  - run_multimer:xtra_args="--gpus=1"
+restart-times: 0
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
