@@ -9,7 +9,8 @@ def scratchpath(path):
     return os.path.join(dir_, path)
 
 def runtime_eu(wildcards, attempt):
-    return ['4h', '1d', '3d', '1w'][attempt - 1]
+    #return ['4h', '1d', '3d', '1w'][attempt - 1]
+    return ['3d', '1w'][attempt - 1]
 
 localrules: fasta_file
 
@@ -114,7 +115,7 @@ rule run_multimer:
         # Set up input directory on scratch
         mkdir -p {params.fasta_dir_scratch}
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
-
+        export TF_FORCE_UNIFIED_MEMORY=1
         echo "Running OpenFold"
         cd {config[openfold_dir]}
         date; time python3 run_pretrained_openfold.py {params.fasta_dir_scratch} {config[template_mmcif_dir]} \
@@ -129,15 +130,21 @@ rule run_multimer:
             {config[binary_paths]} \
             {config[max_template_date][no_templates]} \
             --config_preset model_1_multimer_v3 \
+            --save_outputs \
             --cpus {threads} \
             --skip_relaxation \
-            --use_deepspeed_evoformer_attention \
+            --long_sequence_inference \
             --model_device 'cuda:0'
         cd -
 
         echo "Logging resources to: {params.output_dir_scratch}/sstat.tsv"
+
         mkdir -p {params.output_dir_scratch}
-        sstat --all --parsable2 --job $SLURM_JOB_ID | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
+        sstat --all --parsable2 --job $SLURM_JOB_ID \
+        | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
+
+        nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits \
+        | sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv
 
         echo "syncing back {params.src_dir} {params.dest_dir}"
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
@@ -152,7 +159,12 @@ rule run_pretrained_openfold_help:
 
 rule run_unit_tests:
     conda: 'openfold_env'
+    params:
+        xdg_cache_home = lambda wc: scratchpath('_xdg_cache'),
     shell: """
+        export XDG_CACHE_HOME={params.xdg_cache_home}
+        echo "Using cache"
+        echo $XDG_CACHE_HOME
         cd {config[openfold_dir]}
         date; time scripts/run_unit_tests.sh
     """

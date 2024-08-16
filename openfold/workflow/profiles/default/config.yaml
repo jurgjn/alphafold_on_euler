@@ -1,42 +1,17 @@
-executor: cluster-generic
-cluster-generic-submit-cmd:
-  mkdir -p .snakemake_output/{rule} &&
-  sbatch
-    --account={resources.account}
-    --job-name=smk-{rule}-{wildcards}
-    --ntasks={threads}
-    --mem-per-cpu=`expr {resources.mem_mb} / {threads}`
-    --tmp={resources.disk_mb}
-    --time={resources.runtime}
-    --output=.snakemake_output/{rule}/{rule}-{wildcards}-%j.txt
-    {resources.xtra_args}
-    --parsable
-cluster-generic-status-cmd: status-sacct.sh
-cluster-generic-cancel-cmd: scancel
-cluster-generic-cancel-nargs: 50
 set-threads:
   - precompute_alignments=8
   - run_pretrained_openfold_multimer=8
-default-resources:
-  - account=es_biol
-  - runtime=1h
-  - mem_mb=1024
-  - disk_mb=1024
-  - xtra_args=''
 set-resources:
-  - precompute_alignments:mem_mb=131072
-  - precompute_alignments:disk_mb=131072
-  - run_multimer:mem_mb=131072
-  - run_multimer:disk_mb=131072
-  - run_multimer:xtra_args="--gpus=1"
-restart-times: 0
-max-jobs-per-second: 10
-max-status-checks-per-second: 1
-local-cores: 1
-latency-wait: 60
-jobs: 5000
-keep-going: True
-rerun-incomplete: True
-printshellcmds: True
-scheduler: greedy
-use-conda: True
+  precompute_alignments:
+    mem_mb: 131072
+    disk_mb: 131072
+  run_multimer:
+    mem_mb: 131072
+    disk_mb: 131072
+    # https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
+    slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
+    #slurm_extra: "'--gpus=1 --gres=gpumem%3A40g'"
+  run_unit_tests:
+    mem_mb: 131072
+    disk_mb: 131072
+    slurm_extra: "'--gpus=1 --gres=gpumem%3A16g'"

@@ -8,7 +8,7 @@ include: 'rules/openfold.smk'
 def read_sequences():
     with open(config['sequences']) as fh:
         sequences = fh.read().splitlines()
-    return sequences
+    return sequences[:30]
 
 rule all:
     input:
