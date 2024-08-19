@@ -1,4 +1,6 @@
 
+sequences: /cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/examples/MAPK1_DUSP6/MAPK1_DUSP6.txt
+
 openfold_dir: /cluster/work/beltrao/jjaenes/24.06.10_af2genomics/software/openfold
 
 base_data_dir: /cluster/project/alphafold

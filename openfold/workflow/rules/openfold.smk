@@ -5,8 +5,9 @@ def workpath(path):
 
 def scratchpath(path):
     # https://scicomp.ethz.ch/wiki/Storage_systems#Local_scratch_.28on_each_compute_node.29
-    dir_ = os.environ['TMPDIR']
-    return os.path.join(dir_, path)
+    #dir_ = os.environ['TMPDIR']
+    #return os.path.join(dir_, path)
+    return f'$TMPDIR/{path}' # Use value of $TMPDIR from the compute node (vs submission node)
 
 def runtime_eu(wildcards, attempt):
     #return ['4h', '1d', '3d', '1w'][attempt - 1]

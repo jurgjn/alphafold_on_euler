@@ -14,4 +14,5 @@ set-resources:
   run_unit_tests:
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%3A16g'"
+    #slurm_extra: "'--gpus=1 --gres=gpumem%3A16g'"
+    slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
