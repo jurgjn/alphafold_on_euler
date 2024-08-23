@@ -1,0 +1,38 @@
+name: openfold-env 
+channels:
+  - conda-forge
+  - bioconda
+  - pytorch
+dependencies:
+  - python=3.9
+  - libgcc=7.2
+  - setuptools=59.5.0
+  - pip
+  - openmm=7.7
+  - pdbfixer
+  - pytorch-lightning
+  - biopython
+  - numpy >=1.16.5,<1.23.0 # UserWarning: A NumPy version >=1.16.5 and <1.23.0 is required for this version of SciPy (detected version 1.26.4)
+  - pandas
+  - PyYAML==5.4.1
+  - requests
+  - scipy==1.7
+  - tqdm==4.62.2
+  - typing-extensions==4.0
+  - wandb
+  - modelcif==0.7
+  - awscli
+  - ml-collections
+  - aria2
+  - mkl=2024.0
+  - git
+  - bioconda::hmmer==3.3.2
+  - bioconda::hhsuite==3.3.0
+  - bioconda::kalign2==2.04
+  - bioconda::mmseqs2
+  - pytorch::pytorch=1.12.*
+  - pip:
+      - deepspeed==0.12.6
+      - dm-tree==0.1.6
+      - git+https://github.com/NVIDIA/dllogger.git
+      - git+https://github.com/Dao-AILab/flash-attention.git@5b838a8
