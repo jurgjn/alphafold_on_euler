@@ -10,8 +10,16 @@ def scratchpath(path):
     return f'$TMPDIR/{path}' # Use value of $TMPDIR from the compute node (vs submission node)
 
 def runtime_eu(wildcards, attempt):
-    #return ['4h', '1d', '3d', '1w'][attempt - 1]
-    return ['3d', '1w'][attempt - 1]
+    return ['4h', '1d', '3d', '1w'][attempt - 1]
+
+#def slurm_extra_eu(wildcards, attempt):
+#    # https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
+#    return [
+#        "'--gpus=1 --gres=gpumem%3A11g'",
+#        "'--gpus=1 --gres=gpumem%3A24g'",
+#        "'--gpus=1 --gres=gpumem%3A32g'",
+#        "'--gpus=1 --gres=gpumem%3A40g'",
+#    ][attempt - 1]
 
 localrules: fasta_file
 
@@ -97,26 +105,39 @@ def run_multimer_input(wildcards):
 rule run_multimer:
     # rm -rf /scratch/tmp.3327534.jjaenes/*; rm examples/two_small_proteins/run_multimer_fasta_dir/O00244,O00244.fasta
     # ./openfold-eu --config sequences='examples/two_small_proteins/two_small_proteins.txt' --rerun-triggers input
+    # ./openfold-eu --config sequences='examples/two_small_proteins/two_small_proteins.txt' --rerun-triggers input
     input:
         unpack(run_multimer_input)
     output:
         fasta = workpath('run_multimer_fasta_dir/{sequences}.fasta'),
         sstat = workpath('run_multimer_output_dir/{sequences}/sstat.tsv'),
-    conda: 'openfold_env'
-    resources: runtime = runtime_eu
+    envmodules:
+        'stack/2024-04',
+        'gcc/8.5.0',
+        'cuda/11.8.0',
+    conda:
+        'openfold_env',
+    resources:
+        runtime = runtime_eu,
+        #slurm_extra = slurm_extra_eu,
     params:
         fasta_dir_scratch = lambda wc: scratchpath(f'run_multimer_fasta_dir'),
         output_dir_scratch = lambda wc: scratchpath(f'run_multimer_output_dir/{wc.sequences}'),
         precompute_alignments_dir = lambda wc: workpath('precompute_alignments'),
         src_dir = lambda wc: scratchpath(''),
         dest_dir = lambda wc: workpath(''),
+        xdg_cache_home = lambda wc: scratchpath('_xdg_cache')
     shell: """
-        module load stack/2024-05 gcc/13.2.0 cuda/12.2.1
+        export XDG_CACHE_HOME={params.xdg_cache_home}
 
         # Set up input directory on scratch
         mkdir -p {params.fasta_dir_scratch}
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
-        export TF_FORCE_UNIFIED_MEMORY=1
+
+        echo "Starting nvidia-smi to: {params.output_dir_scratch}/nvidia-smi.tsv"
+        nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits --loop \
+        | sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv &
+
         echo "Running OpenFold"
         cd {config[openfold_dir]}
         date; time python3 run_pretrained_openfold.py {params.fasta_dir_scratch} {config[template_mmcif_dir]} \
@@ -144,28 +165,52 @@ rule run_multimer:
         sstat --all --parsable2 --job $SLURM_JOB_ID \
         | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
 
-        nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits \
-        | sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv
-
         echo "syncing back {params.src_dir} {params.dest_dir}"
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
     """
 
-rule run_pretrained_openfold_help:
-    conda: 'openfold_env'
+#localrules: openfold_setup
+
+rule openfold_setup:
+    # rm -rf $XDG_CACHE_HOME
+    # mamba env remove -n openfold_env -y; rm -rf software/openfold
+    # ./openfold-eu openfold_setup --use-conda --use-envmodules --restart-times=0
+    envmodules:
+        'eth_proxy',
+        'stack/2024-04',
+        'gcc/8.5.0',
+        'cuda/11.8.0',
+    params:
+        xdg_cache_home = lambda wc: scratchpath('_xdg_cache')
     shell: """
-        cd {config[openfold_dir]}
-        date; time python3 run_pretrained_openfold.py --help
+        export XDG_CACHE_HOME={params.xdg_cache_home}
+        time jupyter nbconvert --to notebook --inplace --execute software/openfold-setup.ipynb
     """
 
+#localrules: run_unit_tests
+
 rule run_unit_tests:
-    conda: 'openfold_env'
+    # ./openfold-eu run_unit_tests --use-conda --use-envmodules --restart-times=0
+    envmodules:
+        'stack/2024-04',
+        'gcc/8.5.0',
+        'cuda/11.8.0',
+    conda:
+        'openfold_env',
     params:
         xdg_cache_home = lambda wc: scratchpath('_xdg_cache'),
     shell: """
+        module load stack/2024-04 gcc/8.5.0 cuda/11.8.0
         export XDG_CACHE_HOME={params.xdg_cache_home}
-        echo "Using cache"
-        echo $XDG_CACHE_HOME
-        cd {config[openfold_dir]}
-        date; time scripts/run_unit_tests.sh
+        cd software/openfold
+        time scripts/run_unit_tests.sh
+    """
+
+localrules: run_pretrained_openfold_help
+
+rule run_pretrained_openfold_help:
+    conda: 'openfold_env'
+    shell: """
+        cd software/openfold
+        date; time python3 run_pretrained_openfold.py --help
     """
