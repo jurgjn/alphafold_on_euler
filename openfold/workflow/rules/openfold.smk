@@ -127,6 +127,9 @@ rule run_multimer:
         src_dir = lambda wc: scratchpath(''),
         dest_dir = lambda wc: workpath(''),
         xdg_cache_home = lambda wc: scratchpath('_xdg_cache')
+        #echo "Starting nvidia-smi to: {params.output_dir_scratch}/nvidia-smi.tsv"
+        #nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits --loop \
+        #| sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv &
     shell: """
         export XDG_CACHE_HOME={params.xdg_cache_home}
 
@@ -134,9 +137,7 @@ rule run_multimer:
         mkdir -p {params.fasta_dir_scratch}
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
 
-        echo "Starting nvidia-smi to: {params.output_dir_scratch}/nvidia-smi.tsv"
-        nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits --loop \
-        | sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv &
+        mkdir -p {params.output_dir_scratch}
 
         echo "Running OpenFold"
         cd {config[openfold_dir]}
@@ -161,7 +162,6 @@ rule run_multimer:
 
         echo "Logging resources to: {params.output_dir_scratch}/sstat.tsv"
 
-        mkdir -p {params.output_dir_scratch}
         sstat --all --parsable2 --job $SLURM_JOB_ID \
         | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
 
