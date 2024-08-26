@@ -126,18 +126,19 @@ rule run_multimer:
         precompute_alignments_dir = lambda wc: workpath('precompute_alignments'),
         src_dir = lambda wc: scratchpath(''),
         dest_dir = lambda wc: workpath(''),
-        xdg_cache_home = lambda wc: scratchpath('_xdg_cache')
-        #echo "Starting nvidia-smi to: {params.output_dir_scratch}/nvidia-smi.tsv"
-        #nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits --loop \
-        #| sed 's/, /\\t/g' > {params.output_dir_scratch}/nvidia-smi.tsv &
+        xdg_cache_home = lambda wc: scratchpath('_xdg_cache'),
     shell: """
         export XDG_CACHE_HOME={params.xdg_cache_home}
+        # UserWarning: Specified kernel cache directory could not be created! This disables kernel caching. Specified directory is /scratch/tmp.6156851.jjaenes/_xdg_cache/torch/kernels. This warning will appear only once per process. (Triggered internally at  /opt/conda/conda-bld/pytorch_1659484806139/work/aten/src/ATen/native/cuda/jit_utils.cpp:1089.)
+        mkdir -p $XDG_CACHE_HOME
 
         # Set up input directory on scratch
         mkdir -p {params.fasta_dir_scratch}
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
 
+        echo 'Logging GPU usage to: {params.output_dir_scratch}/nvidia-smi.csv'
         mkdir -p {params.output_dir_scratch}
+        {config[nvidia_smi_cmd]} > {params.output_dir_scratch}/nvidia-smi.csv &
 
         echo "Running OpenFold"
         cd {config[openfold_dir]}
@@ -169,8 +170,6 @@ rule run_multimer:
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
     """
 
-#localrules: openfold_setup
-
 rule openfold_setup:
     # rm -rf $XDG_CACHE_HOME
     # mamba env remove -n openfold_env -y; rm -rf software/openfold
@@ -186,8 +185,6 @@ rule openfold_setup:
         export XDG_CACHE_HOME={params.xdg_cache_home}
         time jupyter nbconvert --to notebook --inplace --execute software/openfold-setup.ipynb
     """
-
-#localrules: run_unit_tests
 
 rule run_unit_tests:
     # ./openfold-eu run_unit_tests --use-conda --use-envmodules --restart-times=0
