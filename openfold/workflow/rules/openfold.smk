@@ -111,6 +111,8 @@ rule run_multimer:
     output:
         fasta = workpath('run_multimer_fasta_dir/{sequences}.fasta'),
         sstat = workpath('run_multimer_output_dir/{sequences}/sstat.tsv'),
+        nvidia_smi = workpath('run_multimer_output_dir/{sequences}/nvidia-smi.csv'),
+        # Add output: unrelaxed model, pkl?
     envmodules:
         'stack/2024-04',
         'gcc/8.5.0',
@@ -129,7 +131,6 @@ rule run_multimer:
         xdg_cache_home = lambda wc: scratchpath('_xdg_cache'),
     shell: """
         export XDG_CACHE_HOME={params.xdg_cache_home}
-        # UserWarning: Specified kernel cache directory could not be created! This disables kernel caching. Specified directory is /scratch/tmp.6156851.jjaenes/_xdg_cache/torch/kernels. This warning will appear only once per process. (Triggered internally at  /opt/conda/conda-bld/pytorch_1659484806139/work/aten/src/ATen/native/cuda/jit_utils.cpp:1089.)
         mkdir -p $XDG_CACHE_HOME
 
         # Set up input directory on scratch
@@ -138,7 +139,7 @@ rule run_multimer:
 
         echo 'Logging GPU usage to: {params.output_dir_scratch}/nvidia-smi.csv'
         mkdir -p {params.output_dir_scratch}
-        {config[nvidia_smi_cmd]} > {params.output_dir_scratch}/nvidia-smi.csv &
+        {config[nvidia_smi_cmd]} | tee {params.output_dir_scratch}/nvidia-smi.csv &
 
         echo "Running OpenFold"
         cd {config[openfold_dir]}

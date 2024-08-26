@@ -10,4 +10,5 @@ module load eth_proxy
 module load stack/2024-05 gcc/13.2.0 cuda/12.2.1
 cd /cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold
 conda activate af2genomics-envA
+./openfold-eu --config sequences='results/example_MAPK1_DUSP6/MAPK1_DUSP6.txt' --rerun-triggers input --unlock
 ./openfold-eu --config sequences='results/example_MAPK1_DUSP6/MAPK1_DUSP6.txt' --rerun-triggers input
