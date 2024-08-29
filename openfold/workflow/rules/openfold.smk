@@ -131,15 +131,13 @@ rule run_multimer:
         xdg_cache_home = lambda wc: scratchpath('_xdg_cache'),
     shell: """
         export XDG_CACHE_HOME={params.xdg_cache_home}
-        mkdir -p $XDG_CACHE_HOME
+        mkdir -p $XDG_CACHE_HOME {params.fasta_dir_scratch} {params.output_dir_scratch}
 
         # Set up input directory on scratch
-        mkdir -p {params.fasta_dir_scratch}
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
 
         echo 'Logging GPU usage to: {params.output_dir_scratch}/nvidia-smi.csv'
-        mkdir -p {params.output_dir_scratch}
-        {config[nvidia_smi_cmd]} | tee {params.output_dir_scratch}/nvidia-smi.csv &
+        stdbuf -i0 -o0 -e0 workflow/scripts/nvidia-smi-log | tee {params.output_dir_scratch}/nvidia-smi.csv &
 
         echo "Running OpenFold"
         cd {config[openfold_dir]}
@@ -163,15 +161,15 @@ rule run_multimer:
         cd -
 
         echo "Logging resources to: {params.output_dir_scratch}/sstat.tsv"
-
         sstat --all --parsable2 --job $SLURM_JOB_ID \
         | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
 
-        echo "syncing back {params.src_dir} {params.dest_dir}"
+        echo "Syncing back {params.src_dir} {params.dest_dir}"
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
     """
 
 rule openfold_setup:
+    # Refactor into localrules - openfold_setup_clean
     # rm -rf $XDG_CACHE_HOME
     # mamba env remove -n openfold_env -y; rm -rf software/openfold
     # ./openfold-eu openfold_setup --use-conda --use-envmodules --restart-times=0
