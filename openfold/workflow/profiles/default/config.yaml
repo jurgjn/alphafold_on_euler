@@ -11,19 +11,21 @@ set-resources:
   run_multimer:
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%3A24g'"
+    slurm_extra: "'--gpus=rtx_3090%1 --gres=gpumem%11g'"
+    #slurm_extra: "'--gpus=rtx_2080_ti%1 --gres=gpumem%11g'"
+    #slurm_extra: "'--gpus=1 --gres=gpumem%3A24g'"
     #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
   run_unit_tests:
     runtime: 1h
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%3A16g'"
+    slurm_extra: "'--gpus=1 --gres=gpumem%16g'"
     #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
   openfold_setup:
     runtime: 1h
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%3A16g'"
+    slurm_extra: "'--gpus=1 --gres=gpumem%16g'"
     #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
 use-conda: True
 use-envmodules: True

@@ -137,7 +137,7 @@ rule run_multimer:
         cat {input.fasta} > {params.fasta_dir_scratch}/{wildcards.sequences}.fasta
 
         echo 'Logging GPU usage to: {params.output_dir_scratch}/nvidia-smi.csv'
-        stdbuf -i0 -o0 -e0 workflow/scripts/nvidia-smi-log | tee {params.output_dir_scratch}/nvidia-smi.csv &
+        stdbuf -i0 -o0 -e0 workflow/scripts/nvidia-smi-log {params.output_dir_scratch}/nvidia-smi.csv &
 
         echo "Running OpenFold"
         cd {config[openfold_dir]}
@@ -161,8 +161,7 @@ rule run_multimer:
         cd -
 
         echo "Logging resources to: {params.output_dir_scratch}/sstat.tsv"
-        sstat --all --parsable2 --job $SLURM_JOB_ID \
-        | tr '|' '\\t' > {params.output_dir_scratch}/sstat.tsv
+        workflow/scripts/sstat-log > {params.output_dir_scratch}/sstat.tsv
 
         echo "Syncing back {params.src_dir} {params.dest_dir}"
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
