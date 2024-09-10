@@ -1,32 +1,41 @@
 # https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
 set-threads:
+  - helixfold3_run_infer=4
   - precompute_alignments=4
   - run_multimer=4
   - run_unit_tests=4
   - openfold_setup=4
 set-resources:
+  # HelixFold3
+  helixfold3_run_infer:
+    runtime: 4h
+    mem_mb: 65536
+    disk_mb: 65536
+    slurm_extra: "'--gpus=rtx_4090%1 --gres=gpumem%24g'"
+  # OpenFold
   precompute_alignments:
-    mem_mb: 131072
-    disk_mb: 131072
+    runtime: 1d
+    mem_mb: 32768
+    disk_mb: 32768
   run_multimer:
+    runtime: 4h
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=rtx_3090%1 --gres=gpumem%11g'"
+    slurm_extra: "'--gpus=1 --gres=gpumem%24g'"
+    #slurm_extra: "'--gpus=rtx_3090%1 --gres=gpumem%11g'"
     #slurm_extra: "'--gpus=rtx_2080_ti%1 --gres=gpumem%11g'"
-    #slurm_extra: "'--gpus=1 --gres=gpumem%3A24g'"
     #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
+    #slurm_extra: f"{[ '--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
   run_unit_tests:
     runtime: 1h
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%16g'"
-    #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
+    slurm_extra: "'--gpus=1 --gres=gpumem%11g'"
   openfold_setup:
     runtime: 1h
     mem_mb: 131072
     disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%16g'"
-    #slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
+    slurm_extra: "'--gpus=1 --gres=gpumem%11g'"
 use-conda: True
 use-envmodules: True
 restart-times: 0

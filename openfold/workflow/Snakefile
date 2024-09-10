@@ -3,12 +3,36 @@ import os, os.path, pandas as pd
 from pprint import pprint
 
 configfile: 'config/config.yaml'
+
+def workpath(path):
+    dir_ = os.path.dirname(os.path.abspath(config['sequences']))
+    return os.path.join(dir_, path)
+
+def scratchpath(path):
+    # https://scicomp.ethz.ch/wiki/Storage_systems#Local_scratch_.28on_each_compute_node.29
+    #dir_ = os.environ['TMPDIR']
+    #return os.path.join(dir_, path)
+    return f'$TMPDIR/{path}' # Use value of $TMPDIR from the compute node (vs submission node)
+
+def runtime_eu(wildcards, attempt):
+    return ['4h', '1d', '3d', '1w'][attempt - 1]
+
+#def slurm_extra_eu(wildcards, attempt):
+#    # https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
+#    return [
+#        "'--gpus=1 --gres=gpumem%3A11g'",
+#        "'--gpus=1 --gres=gpumem%3A24g'",
+#        "'--gpus=1 --gres=gpumem%3A32g'",
+#        "'--gpus=1 --gres=gpumem%3A40g'",
+#    ][attempt - 1]
+
+include: 'rules/helixfold3.smk'
 include: 'rules/openfold.smk'
 
 def read_sequences():
     with open(config['sequences']) as fh:
         sequences = fh.read().splitlines()
-    return sequences[:30]
+    return sequences
 
 rule all:
     input:
@@ -16,4 +40,7 @@ rule all:
         #expand(workpath('precompute_alignments/{sequence}/sstat.tsv'), sequence=read_sequences()),
         #workpath('run_multimer/O00244,O00244/sstat.tsv'),
         #./openfold-eu --config sequences='results/tubb/tubb.txt' --rerun-triggers input --dry-run
-        expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
+        #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
+        #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
+        # 
+        expand(workpath('helixfold3_run_infer/{sequences}/final_features.pkl'), sequences=read_sequences()),

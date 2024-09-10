@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Make output directories for log file if needed
+#mkdir -p `dirname $1`
 # Print update only if $9 (GPU mem usage) changes compared to previous time point
 nvidia-smi --query-gpu=index,count,timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv,nounits --loop \
 | tee $1 \

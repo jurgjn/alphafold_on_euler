@@ -1,26 +1,4 @@
 
-def workpath(path):
-    dir_ = os.path.dirname(os.path.abspath(config['sequences']))
-    return os.path.join(dir_, path)
-
-def scratchpath(path):
-    # https://scicomp.ethz.ch/wiki/Storage_systems#Local_scratch_.28on_each_compute_node.29
-    #dir_ = os.environ['TMPDIR']
-    #return os.path.join(dir_, path)
-    return f'$TMPDIR/{path}' # Use value of $TMPDIR from the compute node (vs submission node)
-
-def runtime_eu(wildcards, attempt):
-    return ['4h', '1d', '3d', '1w'][attempt - 1]
-
-#def slurm_extra_eu(wildcards, attempt):
-#    # https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
-#    return [
-#        "'--gpus=1 --gres=gpumem%3A11g'",
-#        "'--gpus=1 --gres=gpumem%3A24g'",
-#        "'--gpus=1 --gres=gpumem%3A32g'",
-#        "'--gpus=1 --gres=gpumem%3A40g'",
-#    ][attempt - 1]
-
 localrules: fasta_file
 
 rule fasta_file:
@@ -94,6 +72,7 @@ rule precompute_alignments:
 
         # Copy output from scratch to work
         rsync -av {params.output_dir_scratch}/{wildcards.sequence} {params.output_dir}
+        myjobs -j $SLURM_JOB_ID
     """
 
 def run_multimer_input(wildcards):
@@ -165,6 +144,7 @@ rule run_multimer:
 
         echo "Syncing back {params.src_dir} {params.dest_dir}"
         rsync -auq {params.src_dir} {params.dest_dir} --include='run_multimer_fasta_dir/***' --include='run_multimer_output_dir/***' --exclude='*'
+        myjobs -j $SLURM_JOB_ID
     """
 
 rule openfold_setup:
