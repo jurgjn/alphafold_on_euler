@@ -43,4 +43,4 @@ rule all:
         #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
         #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
         # 
-        expand(workpath('helixfold3_run_infer/{sequences}/final_features.pkl'), sequences=read_sequences()),
+        expand(workpath('run_infer/{sequences}/final_features.pkl'), sequences=read_sequences()),

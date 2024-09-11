@@ -3,7 +3,11 @@ rule helixfold3_run_infer:
     input:
         json = workpath('input_json/{sequences}.json'),
     output:
-        pkl = workpath('helixfold3_run_infer/{sequences}/final_features.pkl'),
+        cif = workpath('run_infer/{sequences}/{sequences}-rank1/predicted_structure.cif'),
+        pdb = workpath('run_infer/{sequences}/{sequences}-rank1/predicted_structure.pdb'),
+        pkl = workpath('run_infer/{sequences}/final_features.pkl'),
+        sstat = workpath('run_infer/{sequences}/sstat.tsv'),
+        nvidia_smi = workpath('run_infer/{sequences}/nvidia-smi.csv'),
     envmodules:
         'stack/2024-06',
         'gcc/12.2.0',
@@ -12,7 +16,8 @@ rule helixfold3_run_infer:
     conda:
         'helixfold',
     params:
-        output_dir = workpath('helixfold3_run_infer/'),
+        helixfold_dir = '/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/PaddleHelix/apps/protein_folding/helixfold3',
+        output_dir = workpath('run_infer/'),
     shell: """
         PYTHON_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin/python"
         ENV_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin"
@@ -20,8 +25,13 @@ rule helixfold3_run_infer:
         export OBABEL_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin/obabel"
         DATA_DIR="/cluster/work/beltrao/jjaenes/24.09.03_helixfold3/data_reduced_dbs"
         export PATH="/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod-src/bin:$PATH"
-        export RCSBROOT='/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod'
+        export RCSBROOT='/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod-src'
 
+        echo 'Logging GPU usage to: {output.nvidia_smi}'
+        stdbuf -i0 -o0 -e0 workflow/scripts/nvidia-smi-log {output.nvidia_smi} &
+
+        echo 'Running HelixFold3 inference.py:'
+        cd {params.helixfold_dir}
         CUDA_VISIBLE_DEVICES=0 "$PYTHON_BIN" inference.py \
             --maxit_binary "$MAXIT_SRC/bin/maxit" \
             --jackhmmer_binary_path "$ENV_BIN/jackhmmer" \
@@ -52,4 +62,9 @@ rule helixfold3_run_infer:
             --infer_times 1 \
             --diff_batch_size 1 \
             --precision "fp32"
+        cd -
+
+        echo "Logging resources to: {output.sstat}"
+        workflow/scripts/sstat-log > {output.sstat}
+        myjobs -j $SLURM_JOB_ID
     """
