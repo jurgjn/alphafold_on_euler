@@ -12,7 +12,7 @@ rule helixfold3_run_infer:
         'stack/2024-06',
         'gcc/12.2.0',
         'cuda/12.1.1',
-        'cudnn/8.8.1.3-12',
+        'cudnn/8.9.7.29-12',
     conda:
         'helixfold',
     params:
