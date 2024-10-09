@@ -12,7 +12,7 @@ rule fasta_file:
         > {output.fasta}
     """
 
-rule precompute_alignments:
+rule openfold_precompute_alignments:
     input:
         fasta = workpath('fasta_dir/{sequence}.fasta'),
     output:
@@ -75,18 +75,18 @@ rule precompute_alignments:
         myjobs -j $SLURM_JOB_ID
     """
 
-def run_multimer_input(wildcards):
+def openfold_run_multimer_input(wildcards):
     return {
         'fasta': [ workpath(f'fasta_dir/{sequence}.fasta') for sequence in wildcards.sequences.split('+') ],
         'precompute_alignments': [ workpath(f'precompute_alignments/{sequence}/sstat.tsv') for sequence in wildcards.sequences.split('+') ],
     }
 
-rule run_multimer:
+rule openfold_run_multimer:
     # rm -rf /scratch/tmp.3327534.jjaenes/*; rm examples/two_small_proteins/run_multimer_fasta_dir/O00244,O00244.fasta
     # ./openfold-eu --config sequences='examples/two_small_proteins/two_small_proteins.txt' --rerun-triggers input
     # ./openfold-eu --config sequences='examples/two_small_proteins/two_small_proteins.txt' --rerun-triggers input
     input:
-        unpack(run_multimer_input)
+        unpack(openfold_run_multimer_input)
     output:
         fasta = workpath('run_multimer_fasta_dir/{sequences}.fasta'),
         sstat = workpath('run_multimer_output_dir/{sequences}/sstat.tsv'),
@@ -164,7 +164,7 @@ rule openfold_setup:
         time jupyter nbconvert --to notebook --inplace --execute software/openfold-setup.ipynb
     """
 
-rule run_unit_tests:
+rule openfold_run_unit_tests:
     # ./openfold-eu run_unit_tests --use-conda --use-envmodules --restart-times=0
     envmodules:
         'stack/2024-04',
@@ -183,7 +183,7 @@ rule run_unit_tests:
 
 localrules: run_pretrained_openfold_help
 
-rule run_pretrained_openfold_help:
+rule openfold_run_pretrained_openfold_help:
     conda: 'openfold_env'
     shell: """
         cd software/openfold
