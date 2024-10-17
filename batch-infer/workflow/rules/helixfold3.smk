@@ -68,3 +68,8 @@ rule helixfold3_run_infer:
         workflow/scripts/sstat-log > {output.sstat}
         myjobs -j $SLURM_JOB_ID
     """
+
+#date; time snakemake --profile smk-simple-slurm-eu colabfold_multimer
+#rule helixfold3_all:
+#    input:
+#        #expand(workpath('run_infer/{sequences}/final_features.pkl'), sequences=read_sequences()),

@@ -1,0 +1,33 @@
+#!/bin/bash -l
+# Run batch inference on a set of sequences:
+#     ./batch-infer METHOD RESULTS_ID [--dry-run]
+#
+# For colanfold, run colabfold on a collection of sequences; sequences specified in .csv at:
+#     results/$1/colabfold_input.csv
+#
+# .csv format described in: https://github.com/sokrypton/ColabFold/issues/83
+#
+# Examples:
+#   ./batch-infer colabfold results/example_multimere | sbatch
+#   ./batch-infer colabfold results/missing_pairs --dry-run | sbatch
+#   ./batch-infer colabfold results/interactions_allProteomics --dry-run | sbatch
+#   ./batch-infer colabfold results/interactions_allProteomics | sbatch
+#
+LOGS_DATE=logs/`date +"%y-%m-%d"`
+RESULTS_PREFIX_ENC=`echo -n $2 | sed -e 's#/#-#g'`
+JOBNAME="batch-infer:$1=$RESULTS_PREFIX_ENC"
+cat - <<EOF
+#!/usr/bin/env bash
+#SBATCH --job-name=$JOBNAME
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=16G
+#SBATCH --tmp=16834
+#SBATCH --time=3-00:00:00
+#SBATCH --output=$LOGS_DATE/$JOBNAME-%j.txt
+source /cluster/home/jjaenes/.bashrc
+module load eth_proxy
+conda activate af2genomics-envA
+snakemake $1_all --profile smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input --unlock
+snakemake $1_all --profile smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input $3
+myjobs -j \$SLURM_JOB_ID
+EOF

@@ -2,6 +2,8 @@
 #     runtime: f"{['4h', '1d', '3d', '1w'][attempt - 1]}"
 #
 # Sizes for mem_mb/disk_mb:
+#      16g: 16384
+#      32g: 32768
 #      64g: 65536
 #     128g: 131072
 #     256g: 262144
@@ -15,10 +17,10 @@
 #     slurm_extra: "'--gpus=rtx_2080_ti%1 --gres=gpumem%11g'"
 #     slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
 #
-# Ref: https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
+# GPU node specs: https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
 set-threads:
-  - colabfold_search=16
-  - colabfold_batch=1
+  - colabfold_msas=24
+  - colabfold_predictions=1
   - helixfold3_run_infer=4
   - openfold_precompute_alignments=8
   - openfold_run_multimer=4
@@ -29,13 +31,13 @@ set-resources:
     runtime: 3d
     mem_mb: 131072
     disk_mb: 131072
-  colabfold_search:
-    runtime: 1d
+  colabfold_msas:
+    runtime: 7d
     mem_mb: 262144
     disk_mb: 262144
-  colabfold_batch:
+  colabfold_predictions:
     runtime: 3d
-    mem_mb: 262144
+    mem_mb: 16384
     disk_mb: 262144
     slurm_extra: f"{[ '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
   helixfold3_run_infer:

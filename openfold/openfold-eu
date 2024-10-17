@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-date; time snakemake --profile smk-simple-slurm-eu $@

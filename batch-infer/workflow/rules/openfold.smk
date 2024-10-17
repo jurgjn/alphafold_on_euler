@@ -189,3 +189,22 @@ rule openfold_run_pretrained_openfold_help:
         cd software/openfold
         date; time python3 run_pretrained_openfold.py --help
     """
+
+'''
+def read_sequences():
+    with open(config['sequences']) as fh:
+        sequences = fh.read().splitlines()
+    return sequences
+
+
+#date; time snakemake --profile smk-simple-slurm-eu colabfold_multimer
+rule openfold_all:
+    # ./openfold-eu --config sequences='results/example_ATOX1/ATOX1.txt' --rerun-triggers input --dry-run
+    input:
+        expand(workpath('fasta_dir/{sequence}.fasta'), sequence=read_sequences()),
+        #expand(workpath('precompute_alignments/{sequence}/sstat.tsv'), sequence=read_sequences()),
+        #workpath('run_multimer/O00244,O00244/sstat.tsv'),
+        #./openfold-eu --config sequences='results/tubb/tubb.txt' --rerun-triggers input --dry-run
+        #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
+        #expand(workpath('run_multimer_output_dir/{sequences}/sstat.tsv'), sequences=read_sequences()),
+'''
