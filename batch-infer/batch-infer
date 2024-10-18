@@ -27,7 +27,7 @@ cat - <<EOF
 source /cluster/home/jjaenes/.bashrc
 module load eth_proxy
 conda activate af2genomics-envA
-snakemake $1_all --profile smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input --unlock
-snakemake $1_all --profile smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input $3
+snakemake $1_all --profile software/smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input --unlock
+snakemake $1_all --profile software/smk-simple-slurm-eu --config results_prefix=$2 --rerun-triggers input $3
 myjobs -j \$SLURM_JOB_ID
 EOF

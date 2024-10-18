@@ -1,0 +1,3 @@
+[submodule "batch-infer/software/smk-simple-slurm-eu"]
+	path = batch-infer/software/smk-simple-slurm-eu
+	url = git@github.com:jurgjn/smk-simple-slurm-eu.git
