@@ -5,6 +5,7 @@
 #      16g: 16384
 #      32g: 32768
 #      64g: 65536
+#      96g: 98304
 #     128g: 131072
 #     256g: 262144
 #     512g: 524288
@@ -27,19 +28,18 @@ set-threads:
   - openfold_run_unit_tests=4
   - openfold_setup=4
 set-resources:
+  colabfold_msas:
+    runtime: 7d
+    mem_mb: 196608
+  colabfold_predictions:
+    runtime: 3d
+    mem_mb: f"{[16384, 32768, 65536, 98304][attempt - 1]}"
+    disk_mb: f"{[16384, 32768, 65536, 98304][attempt - 1]}"
+    slurm_extra: f"{[ '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
   colabfold_setup_databases:
     runtime: 3d
     mem_mb: 131072
     disk_mb: 131072
-  colabfold_msas:
-    runtime: 7d
-    mem_mb: 262144
-    disk_mb: 262144
-  colabfold_predictions:
-    runtime: 3d
-    mem_mb: 16384
-    disk_mb: 262144
-    slurm_extra: f"{[ '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
   helixfold3_run_infer:
     runtime: 4h
     mem_mb: 65536
@@ -68,4 +68,4 @@ use-conda: True
 use-envmodules: True
 use-singularity: True
 singularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
-restart-times: 0
+restart-times: 3
