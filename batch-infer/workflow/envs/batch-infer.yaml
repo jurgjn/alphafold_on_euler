@@ -1,0 +1,14 @@
+# conda env create --file workflow/envs/batch-infer.yaml
+# conda env remove --name batch-infer-env
+name: batch-infer-env
+channels:
+- bioconda
+- conda-forge
+- defaults
+dependencies:
+- awscli
+- aria2
+- pandas
+- snakemake-minimal>=8
+- snakemake-executor-plugin-cluster-generic
+- wget
