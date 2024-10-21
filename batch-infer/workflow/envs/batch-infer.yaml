@@ -9,6 +9,6 @@ dependencies:
 - awscli
 - aria2
 - pandas
-- snakemake-minimal>=8
+- snakemake-minimal==8.16 #https://github.com/snakemake/snakemake/issues/3019
 - snakemake-executor-plugin-cluster-generic
 - wget

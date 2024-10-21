@@ -10,15 +10,16 @@
 #     256g: 262144
 #     512g: 524288
 #
-# One GPU, increasing memory:
-#     slurm_extra: f"{[ '--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
+# Increasing GPU/matched RAM(48g, 64g, 64g, 64g, 96g): https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
+#     mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+#     disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+#     slurm_extra: f"{[ '--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
 #
 # Specific models:
 #     slurm_extra: "'--gpus=rtx_3090%1 --gres=gpumem%11g'"
 #     slurm_extra: "'--gpus=rtx_2080_ti%1 --gres=gpumem%11g'"
 #     slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
 #
-# GPU node specs: https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Available_GPU_node_types
 set-threads:
   - colabfold_msas=24
   - colabfold_predictions=1
@@ -33,9 +34,12 @@ set-resources:
     mem_mb: 196608
   colabfold_predictions:
     runtime: 3d
-    mem_mb: f"{[16384, 32768, 65536, 98304][attempt - 1]}"
-    disk_mb: f"{[16384, 32768, 65536, 98304][attempt - 1]}"
-    slurm_extra: f"{[ '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
+    mem_mb: f'{[65536, 65536, 65536, 98304][attempt - 1]}'
+    disk_mb: f'{[65536, 65536, 65536, 98304][attempt - 1]}'
+    slurm_extra: f"{['--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
+    #mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    #disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    #slurm_extra: f"{['--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
   colabfold_setup_databases:
     runtime: 3d
     mem_mb: 131072

@@ -10,16 +10,13 @@ Colabfold adapted to euler:
 [Running ColabFold in Docker](https://github.com/sokrypton/ColabFold/wiki/Running-ColabFold-in-Docker)
 """
 
-def results_prefix_path(file):
-    return os.path.join(config['results_prefix'], file)
-
 localrules: colabfold_docker
 rule colabfold_docker:
     """
     Download colabfold docker image & convert to Singularity:
         https://github.com/sokrypton/ColabFold/wiki/Running-ColabFold-in-Docker
     """
-    output: 'software/colabfold/colabfold_1.5.5-cuda11.8.0.sif'
+    output: software_path('colabfold/colabfold_1.5.5-cuda11.8.0.sif')
     shell: """
         cd software/colabfold
         singularity pull docker://ghcr.io/sokrypton/colabfold:1.5.5-cuda11.8.0
@@ -30,7 +27,7 @@ rule colabfold_cache:
     """
     Download colabfold cache directory used to store AF2 model weights
     """
-    output: directory('software/colabfold/cache')
+    output: directory(software_path('colabfold/cache'))
     shell: """
         mkdir -p {output}
         singularity run -B {output}:/cache \
@@ -48,12 +45,12 @@ rule colabfold_setup_databases:
     Last step (PDB_MMCIF_READY) will fail as image does not have rsync; work around by running commands separately outside Singularity
     """
     output:
-        dir = directory('software/colabfold/database/'),
-        uniref30_ready = 'software/colabfold/database/UNIREF30_READY',
-        colabdb_ready = 'software/colabfold/database/COLABDB_READY',
-        pdb_ready = 'software/colabfold/database/PDB_READY',
-        pdb100_ready = 'software/colabfold/database/PDB100_READY',
-        pdb_mmcif_ready = 'software/colabfold/database/PDB_MMCIF_READY',
+        dir = directory(software_path('colabfold/database/')),
+        uniref30_ready = software_path('colabfold/database/UNIREF30_READY'),
+        colabdb_ready = software_path('colabfold/database/COLABDB_READY'),
+        pdb_ready = software_path('colabfold/database/PDB_READY'),
+        pdb100_ready = software_path('colabfold/database/PDB100_READY'),
+        pdb_mmcif_ready = software_path('colabfold/database/PDB_MMCIF_READY'),
     shell: """
         module load eth_proxy
         cd software/colabfold
@@ -74,12 +71,12 @@ rule colabfold_msas:
     real    2m28.374s
     """
     input:
-        csv = results_prefix_path('colabfold_input.csv'),
+        csv = 'colabfold_input.csv',
         docker = ancient(rules.colabfold_docker.output),
         cache = ancient(rules.colabfold_cache.output),
         databases = ancient(rules.colabfold_setup_databases.output.dir),
     output:
-        msas = directory(results_prefix_path('colabfold_msas')),
+        msas = directory('colabfold_msas'),
     shell: """
         mkdir -p {output.msas}
         singularity run -B {input.cache}:/cache -B $(pwd):/work -B {output.msas} {input.docker} \
@@ -89,23 +86,23 @@ rule colabfold_msas:
 
 @functools.cache
 def colabfold_stats():
-    fp_ = os.path.join(config['results_prefix'], 'colabfold_input.csv')
+    fp_ = 'colabfold_input.csv'
     df_ = pd.read_csv(fp_)
     df_['sequence_len'] = df_['sequence'].str.len()
     df_ = df_.sort_values(['sequence_len']).reset_index(drop=True)
-    df_['sequence_len_check'] = (16 < df_['sequence_len']) & (df_['sequence_len'] <= 3000)
+    df_['sequence_len_check'] = (16 < df_['sequence_len']) & (df_['sequence_len'] <= 2500)
 
     df_['a3m'] = df_['id'].map(lambda id: f'colabfold_msas/{id}.a3m')
     df_['pdb'] = df_['id'].map(lambda id: f'colabfold_predictions/{id}_unrelaxed_rank_001_alphafold2_multimer_v3_model_1_seed_000.pdb')
     df_['json'] = df_['id'].map(lambda id: f'colabfold_predictions/{id}_scores_rank_001_alphafold2_multimer_v3_model_1_seed_000.json')
     df_['done'] = df_['id'].map(lambda id: f'colabfold_predictions/{id}.done.txt')
 
-    #a3m_files = glob.glob(results_prefix_path('colabfold_msas/*.a3m'))
+    #a3m_files = glob.glob('colabfold_msas/*.a3m')
     #print(a3m_files)
-    df_['a3m_isfile'] = df_['a3m'].map(lambda file: os.path.isfile(results_prefix_path(file)))
-    #df_['pdb_isfile'] = df_['pdb'].map(lambda file: os.path.isfile(results_prefix_path(file)))
-    #df_['json_isfile'] = df_['json'].map(lambda file: os.path.isfile(results_prefix_path(file)))
-    df_['done_isfile'] = df_['done'].map(lambda file: os.path.isfile(results_prefix_path(file)))
+    df_['a3m_isfile'] = df_['a3m'].map(lambda file: os.path.isfile(file))
+    #df_['pdb_isfile'] = df_['pdb'].map(lambda file: os.path.isfile(file))
+    #df_['json_isfile'] = df_['json'].map(lambda file: os.path.isfile(file))
+    df_['done_isfile'] = df_['done'].map(lambda file: os.path.isfile(file))
 
     printlenq(df_, 'sequence_len_check', 'with sequence size between 16 and 3000')
     printlenq(df_, 'sequence_len_check & a3m_isfile', 'alignments finished')
@@ -119,15 +116,15 @@ checkpoint colabfold_splits:
     https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
     """
     input:
-        csv = results_prefix_path('colabfold_input.csv'),
+        csv = 'colabfold_input.csv',
     output:
-        dir = directory(results_prefix_path('colabfold_splits/')),
+        dir = directory('colabfold_splits'),
     params:
         nbatches = 200,
         batch_id_max = None,
         nrows_max = None,
     run:
-        df_ = colabfold_stats().query('sequence_len_check').copy()
+        df_ = colabfold_stats()#.query('sequence_len_check').copy()
         # Group into batches of approx equal size by weighing individual sequences by square of the weight
         df_['weight'] = df_['sequence_len'] ** 2
         df_['weight'] = df_['weight'] / df_['weight'].sum()
@@ -145,22 +142,26 @@ rule colabfold_predictions:
     Predict structure based on splits generated by colabfold_splits
     """
     input:
-        msas = results_prefix_path('colabfold_msas'),
-        todo = results_prefix_path('colabfold_splits/split{batch_id}.todo.txt'),
+        msas = 'colabfold_msas',
+        todo = 'colabfold_splits/split{batch_id}.todo.txt',
         docker = ancient(rules.colabfold_docker.output),
         cache = ancient(rules.colabfold_cache.output),
     output:
-        done = results_prefix_path('colabfold_splits/split{batch_id}.done.txt'),
+        done = 'colabfold_splits/split{batch_id}.done.txt',
+    params:
+        nvidia_smi = f'{workflow.basedir}/scripts/nvidia-smi-log',
     envmodules:
         'stack/.2024-04-silent', 'gcc/8.5.0', 'cuda/11.8.0',
     shell: """
         echo {rule}: Copying MSAs to "$TMPDIR":
-        rsync -av --files-from {input.todo} {config[results_prefix]} $TMPDIR
+        rsync -av --files-from {input.todo} ./ $TMPDIR
+        echo {rule}: Logging GPU usage:
+        stdbuf -i0 -o0 -e0 {params.nvidia_smi} &
         echo {rule}: Running colabfold_batch under singularity:
         singularity run --nv -B {input.cache}:/cache -B $TMPDIR:/work {input.docker} \
             colabfold_batch --num-models 1 /work/colabfold_msas /work/colabfold_predictions
         echo {rule}: Copying results back from "$TMPDIR/colabfold_predictions/": 
-        rsync -av $TMPDIR/colabfold_predictions/ {config[results_prefix]}/colabfold_predictions/
+        rsync -av $TMPDIR/colabfold_predictions/ colabfold_predictions/
         echo {rule}: Scratch usage: 
         du -hs $TMPDIR
         echo {rule}: Finished, stats:
@@ -171,15 +172,15 @@ rule colabfold_predictions:
 def colabfold_all_input(wildcards):
     # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
     checkpoint_output = checkpoints.colabfold_splits.get(**wildcards).output.dir
-    return expand(results_prefix_path('colabfold_splits/split{batch_id}.done.txt'), batch_id=glob_wildcards(results_prefix_path('colabfold_splits/split{batch_id}.done.txt')).batch_id)
+    return expand('colabfold_splits/split{batch_id}.done.txt', batch_id=glob_wildcards('colabfold_splits/split{batch_id}.done.txt').batch_id)
 
 localrules: colabfold_all
 rule colabfold_all:
-    # snakemake colabfold_all --profile smk-simple-slurm-eu --config results_prefix=results/interactions_allProteomics --rerun-triggers input --dry-run
+    # snakemake colabfold_all --profile smk-simple-slurm-eu --directory results/interactions_allProteomics --rerun-triggers input --dry-run
     input:
         #colabfold_all_input #https://github.com/snakemake/snakemake/issues/2957
-        #results_prefix_path('colabfold_splits'),
-        expand(results_prefix_path('colabfold_splits/split{batch_id}.done.txt'), batch_id=range(rules.colabfold_splits.params.nbatches)),
+        #'colabfold_splits',
+        expand('colabfold_splits/split{batch_id}.done.txt', batch_id=[0, 1]),#range(rules.colabfold_splits.params.nbatches)),
 '''
     run:
         df_ = colabfold_stats()
