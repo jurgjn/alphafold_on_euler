@@ -13,7 +13,7 @@
 #   ./batch-infer colabfold results/interactions_allProteomics --dry-run | sbatch
 #   ./batch-infer colabfold results/interactions_allProteomics | sbatch
 #
-LOGS_DATE=$2/logs/`date +"%y-%m-%d"`
+LOGS_DATE=$2/.smk-simple-slurm-eu/logs/`date +"%y-%m-%d"`
 RESULTS_PREFIX_ENC=`echo -n $2 | sed -e 's#/#-#g'`
 JOBNAME="batch-infer:$1=$RESULTS_PREFIX_ENC"
 PROFILE=`pwd`/software/smk-simple-slurm-eu
@@ -28,7 +28,6 @@ cat - <<EOF
 source $HOME/.bashrc
 module load eth_proxy
 conda activate batch-infer-env
-snakemake $1_all --profile=$PROFILE --directory $2 --rerun-triggers input --unlock
 snakemake $1_all --profile=$PROFILE --directory $2 --rerun-triggers input $3
 myjobs -j \$SLURM_JOB_ID
 EOF

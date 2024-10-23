@@ -34,12 +34,12 @@ set-resources:
     mem_mb: 196608
   colabfold_predictions:
     runtime: 3d
-    mem_mb: f'{[65536, 65536, 65536, 98304][attempt - 1]}'
-    disk_mb: f'{[65536, 65536, 65536, 98304][attempt - 1]}'
-    slurm_extra: f"{['--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
-    #mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
-    #disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
-    #slurm_extra: f"{['--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
+    #mem_mb: f"{[65536, 65536, 65536, 98304][attempt - 1]}"
+    #disk_mb: f"{[65536, 65536, 65536, 98304][attempt - 1]}"
+    #slurm_extra: f"{['--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
+    mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    slurm_extra: f"{['--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
   colabfold_setup_databases:
     runtime: 3d
     mem_mb: 131072
@@ -72,4 +72,4 @@ use-conda: True
 use-envmodules: True
 use-singularity: True
 singularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
-restart-times: 3
+restart-times: 0

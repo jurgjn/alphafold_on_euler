@@ -1,13 +1,13 @@
 
 rule helixfold3_run_infer:
     input:
-        json = workpath('input_json/{sequences}.json'),
+        json = 'helixfold3_input_json/{sequences}.json',
     output:
-        cif = workpath('run_infer/{sequences}/{sequences}-rank1/predicted_structure.cif'),
-        pdb = workpath('run_infer/{sequences}/{sequences}-rank1/predicted_structure.pdb'),
-        pkl = workpath('run_infer/{sequences}/final_features.pkl'),
-        sstat = workpath('run_infer/{sequences}/sstat.tsv'),
-        nvidia_smi = workpath('run_infer/{sequences}/nvidia-smi.csv'),
+        cif = 'helixfold3_run_infer/{sequences}/{sequences}-rank1/predicted_structure.cif',
+        pdb = 'helixfold3_run_infer/{sequences}/{sequences}-rank1/predicted_structure.pdb',
+        pkl = 'helixfold3_run_infer/{sequences}/final_features.pkl',
+        sstat = 'helixfold3_run_infer/{sequences}/sstat.tsv',
+        nvidia_smi = 'helixfold3_run_infer/{sequences}/nvidia-smi.csv',
     envmodules:
         'stack/2024-06',
         'gcc/12.2.0',
@@ -16,16 +16,16 @@ rule helixfold3_run_infer:
     conda:
         'helixfold',
     params:
-        helixfold_dir = '/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/PaddleHelix/apps/protein_folding/helixfold3',
-        output_dir = workpath('run_infer/'),
+        helixfold_dir = '/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/batch-infer/software/PaddleHelix/apps/protein_folding/helixfold3',
+        output_dir = 'helixfold3_run_infer/',
     shell: """
         PYTHON_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin/python"
         ENV_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin"
-        MAXIT_SRC="/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod-src"
+        MAXIT_SRC="/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/batch-infer/software/maxit-v11.100-prod-src"
         export OBABEL_BIN="/cluster/project/beltrao/jjaenes/software/miniconda3/envs/helixfold/bin/obabel"
         DATA_DIR="/cluster/work/beltrao/jjaenes/24.09.03_helixfold3/data_reduced_dbs"
-        export PATH="/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod-src/bin:$PATH"
-        export RCSBROOT='/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/software/maxit-v11.100-prod-src'
+        export PATH="/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/batch-infer/software/maxit-v11.100-prod-src/bin:$PATH"
+        export RCSBROOT='/cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/batch-infer/software/maxit-v11.100-prod-src'
 
         echo 'Logging GPU usage to: {output.nvidia_smi}'
         stdbuf -i0 -o0 -e0 workflow/scripts/nvidia-smi-log {output.nvidia_smi} &
@@ -69,7 +69,7 @@ rule helixfold3_run_infer:
         myjobs -j $SLURM_JOB_ID
     """
 
-#date; time snakemake --profile smk-simple-slurm-eu colabfold_multimer
-#rule helixfold3_all:
-#    input:
-#        #expand(workpath('run_infer/{sequences}/final_features.pkl'), sequences=read_sequences()),
+localrules: helixfold3_all
+rule helixfold3_all:
+    input:
+        expand('helixfold3_run_infer/{sequences}/final_features.pkl', sequences=['CSTF2T_ADK__518']),

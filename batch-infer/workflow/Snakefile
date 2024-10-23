@@ -6,5 +6,5 @@ from pprint import pprint
 
 include: 'rules/common.smk'
 include: 'rules/colabfold.smk'
-#include: 'rules/helixfold3.smk'
+include: 'rules/helixfold3.smk'
 #include: 'rules/openfold.smk'

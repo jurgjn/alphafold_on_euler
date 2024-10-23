@@ -73,14 +73,15 @@ rule colabfold_msas:
     input:
         csv = 'colabfold_input.csv',
         docker = ancient(rules.colabfold_docker.output),
-        cache = ancient(rules.colabfold_cache.output),
         databases = ancient(rules.colabfold_setup_databases.output.dir),
     output:
         msas = directory('colabfold_msas'),
     shell: """
+        echo {rule}: Creating output directory {output.msas}
         mkdir -p {output.msas}
-        singularity run -B {input.cache}:/cache -B $(pwd):/work -B {output.msas} {input.docker} \
-            colabfold_search --threads {threads} {input.csv} {input.databases} {output.msas}
+        echo {rule}: Running colabfold_search
+        singularity run -B $(pwd):/work -B {input.databases}:/databases {input.docker} \
+            colabfold_search --threads {threads} /work/{input.csv} /databases /work/{output.msas}
         myjobs -j $SLURM_JOB_ID
     """
 
@@ -120,7 +121,7 @@ checkpoint colabfold_splits:
     output:
         dir = directory('colabfold_splits'),
     params:
-        nbatches = 200,
+        nbatches = 1,
         batch_id_max = None,
         nrows_max = None,
     run:
@@ -157,22 +158,30 @@ rule colabfold_predictions:
         rsync -av --files-from {input.todo} ./ $TMPDIR
         echo {rule}: Logging GPU usage:
         stdbuf -i0 -o0 -e0 {params.nvidia_smi} &
+        PID_NVIDIA_SMI=$!
         echo {rule}: Running colabfold_batch under singularity:
         singularity run --nv -B {input.cache}:/cache -B $TMPDIR:/work {input.docker} \
             colabfold_batch --num-models 1 /work/colabfold_msas /work/colabfold_predictions
-        echo {rule}: Copying results back from "$TMPDIR/colabfold_predictions/": 
-        rsync -av $TMPDIR/colabfold_predictions/ colabfold_predictions/
+        COLABFOLD_EXIT=$?
+        echo {rule}: colabfold_batch finished with exit code "$COLABFOLD_EXIT"
+        echo {rule}: Killing nvidia_smi with pid "$PID_NVIDIA_SMI":
+        kill $PID_NVIDIA_SMI
         echo {rule}: Scratch usage: 
         du -hs $TMPDIR
-        echo {rule}: Finished, stats:
+        echo {rule}: Job stats:
         myjobs -j $SLURM_JOB_ID
-        touch {output.done}
+        if [[ $COLABFOLD_EXIT -eq 0 ]]
+        then
+            echo {rule}: Success, copying results back from "$TMPDIR/colabfold_predictions/": 
+            rsync -av $TMPDIR/colabfold_predictions/ colabfold_predictions/
+            touch {output.done}
+        fi
     """
 
 def colabfold_all_input(wildcards):
     # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
     checkpoint_output = checkpoints.colabfold_splits.get(**wildcards).output.dir
-    return expand('colabfold_splits/split{batch_id}.done.txt', batch_id=glob_wildcards('colabfold_splits/split{batch_id}.done.txt').batch_id)
+    return expand('colabfold_splits/split{batch_id}.done.txt', batch_id=glob_wildcards('colabfold_splits/split{batch_id}.todo.txt').batch_id)
 
 localrules: colabfold_all
 rule colabfold_all:
@@ -180,7 +189,8 @@ rule colabfold_all:
     input:
         #colabfold_all_input #https://github.com/snakemake/snakemake/issues/2957
         #'colabfold_splits',
-        expand('colabfold_splits/split{batch_id}.done.txt', batch_id=[0, 1]),#range(rules.colabfold_splits.params.nbatches)),
+        #expand('colabfold_splits/split{batch_id}.done.txt', batch_id=[0, 1]),
+        expand('colabfold_splits/split{batch_id}.done.txt', batch_id=range(rules.colabfold_splits.params.nbatches)),
 '''
     run:
         df_ = colabfold_stats()
