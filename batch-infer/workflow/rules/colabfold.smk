@@ -121,7 +121,7 @@ checkpoint colabfold_splits:
     output:
         dir = directory('colabfold_splits'),
     params:
-        nbatches = 1,
+        nbatches = 9,
         batch_id_max = None,
         nrows_max = None,
     run:
@@ -161,7 +161,7 @@ rule colabfold_predictions:
         PID_NVIDIA_SMI=$!
         echo {rule}: Running colabfold_batch under singularity:
         singularity run --nv -B {input.cache}:/cache -B $TMPDIR:/work {input.docker} \
-            colabfold_batch --num-models 1 /work/colabfold_msas /work/colabfold_predictions
+            colabfold_batch /work/colabfold_msas /work/colabfold_predictions
         COLABFOLD_EXIT=$?
         echo {rule}: colabfold_batch finished with exit code "$COLABFOLD_EXIT"
         echo {rule}: Killing nvidia_smi with pid "$PID_NVIDIA_SMI":
