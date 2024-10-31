@@ -1,9 +1,10 @@
 # alphafold_on_euler
 
 This project creates SLURM scripts helping users to estimate the computing resources required for AlphaFold jobs, and automatically outputs a run script ready to be submitted.
-The repository currently contains two SLURM script generators :
+The repository currently contains three SLURM script generators :
 - one for AlphaFold 2.3.1 written in bash
 - one for Alphafold 2.3.2 written in python
+- [one snakemake pipeline for batch inference](batch-infer/)
 
 If in doubt, please use the most recent version of Alphafold.
 Up to and including AF2.3.1, all AlphaFold version has been installed manually on the cluster. Starting AF2.3.2, due to package incompatibilities, we now provide this software in a container. 
