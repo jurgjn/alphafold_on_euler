@@ -86,7 +86,7 @@ rule colabfold_msas:
     """
 
 @functools.cache
-def colabfold_stats():
+def colabfold_stats(max_nbatches=200):
     fp_ = 'colabfold_input.csv'
     df_ = pd.read_csv(fp_)
     df_['sequence_len'] = df_['sequence'].str.len()
@@ -108,10 +108,16 @@ def colabfold_stats():
     printlenq(df_, 'sequence_len_check', 'with sequence size between 16 and 3000')
     printlenq(df_, 'sequence_len_check & a3m_isfile', 'alignments finished')
     printlenq(df_, 'sequence_len_check & done_isfile', 'structures finished')
+
+    df_['weight'] = df_['sequence_len'] ** 2
+    df_['weight'] = df_['weight'] / df_['weight'].sum()
+    df_['batch_id'] = pd.cut(df_['weight'].cumsum(), bins=max_nbatches, labels=False).rank().astype(int)
+    print('Number of sequences per batch:', df_['batch_id'].value_counts())
+    print('Effort per batch:', df_.groupby('batch_id')['weight'].sum())
     return df_
 
-localrules: colabfold_splits
-checkpoint colabfold_splits:
+localrules: colabfold_predictions_todo
+checkpoint colabfold_predictions_todo:
     """
     Generate splits for colabfold predictions
     https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
@@ -119,23 +125,16 @@ checkpoint colabfold_splits:
     input:
         csv = 'colabfold_input.csv',
     output:
-        dir = directory('colabfold_splits'),
+        dir = directory('colabfold_predictions_todo'),
     params:
-        nbatches = 9,
-        batch_id_max = None,
         nrows_max = None,
     run:
         df_ = colabfold_stats()#.query('sequence_len_check').copy()
         # Group into batches of approx equal size by weighing individual sequences by square of the weight
-        df_['weight'] = df_['sequence_len'] ** 2
-        df_['weight'] = df_['weight'] / df_['weight'].sum()
-        df_['batch_id'] = pd.cut(df_['weight'].cumsum(), bins=params.nbatches, labels=False)
-        print('Number of sequences per batch:', df_['batch_id'].value_counts())
-        print('Effort per batch:', df_.groupby('batch_id')['weight'].sum())
         os.makedirs(output.dir, exist_ok=True)
         for batch_id, df_batch in df_.groupby('batch_id'):
             #if (params.batch_id_max is None) or (batch_id < params.batch_id_max):
-            fp_ = os.path.join(output.dir, f'split{batch_id}.todo.txt')
+            fp_ = os.path.join(output.dir, f'batch{batch_id}.txt')
             df_batch['a3m'].head(params.nrows_max).to_csv(fp_, index=False, header=False)
 
 rule colabfold_predictions:
@@ -144,11 +143,11 @@ rule colabfold_predictions:
     """
     input:
         msas = 'colabfold_msas',
-        todo = 'colabfold_splits/split{batch_id}.todo.txt',
+        todo = 'colabfold_predictions_todo/batch{batch_id}.txt',
         docker = ancient(rules.colabfold_docker.output),
         cache = ancient(rules.colabfold_cache.output),
     output:
-        done = 'colabfold_splits/split{batch_id}.done.txt',
+        done = 'colabfold_predictions_done/batch{batch_id}.txt',
     params:
         nvidia_smi = f'{workflow.basedir}/scripts/nvidia-smi-log',
     envmodules:
@@ -180,17 +179,17 @@ rule colabfold_predictions:
 
 def colabfold_all_input(wildcards):
     # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
-    checkpoint_output = checkpoints.colabfold_splits.get(**wildcards).output.dir
-    return expand('colabfold_splits/split{batch_id}.done.txt', batch_id=glob_wildcards('colabfold_splits/split{batch_id}.todo.txt').batch_id)
+    checkpoint_output = checkpoints.colabfold_predictions_todo.get(**wildcards).output.dir
+    return expand('colabfold_predictions_done/batch{batch_id}.txt', batch_id=glob_wildcards('colabfold_predictions_todo/batch{batch_id}.txt').batch_id)
 
 localrules: colabfold_all
 rule colabfold_all:
     # snakemake colabfold_all --profile smk-simple-slurm-eu --directory results/interactions_allProteomics --rerun-triggers input --dry-run
     input:
-        #colabfold_all_input #https://github.com/snakemake/snakemake/issues/2957
+        colabfold_all_input #https://github.com/snakemake/snakemake/issues/2957
         #'colabfold_splits',
         #expand('colabfold_splits/split{batch_id}.done.txt', batch_id=[0, 1]),
-        expand('colabfold_splits/split{batch_id}.done.txt', batch_id=range(rules.colabfold_splits.params.nbatches)),
+        #expand('colabfold_splits_todo/split{batch_id}.done.txt', batch_id=colabfold_stats()['batch_id'].unique()),
 '''
     run:
         df_ = colabfold_stats()
