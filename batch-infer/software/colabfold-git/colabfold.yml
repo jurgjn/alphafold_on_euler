@@ -1,0 +1,34 @@
+name: colabfold
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python
+  - poetry-core[version='>=1.0.0']
+  - absl-py
+  - matplotlib-base
+  - numpy
+  - scipy
+  - requests
+  - tqdm
+  - pandas
+  - appdirs
+  - py3Dmol
+  - dm-tree
+  - ml-collections
+  - importlib-metadata
+  - dm-haiku [version='>=0.0.12']
+  - biopython [version='<=1.82']
+  - jax [version>='0.4.23, <0.4.26']
+  - jaxlib [version>='0.4.23, <0.4.26']
+  - tensorflow-base [version>='2.12.1=cpu*']
+  - mmseqs2 [version>=15.6f452]
+  - kalign2 [version>='2.04']
+  - hhsuite [version>='3.3.0']
+  - openmm [version>='7.7.0, <8.1.0']
+  - pdbfixer
+  - pip
+  - pip:
+    - git+https://github.com/sokrypton/ColabFold.git@c21e1768d18e3608e6e6d99c97134317e7e41c75
+    - git+https://github.com/steineggerlab/alphafold.git@v2.3.6
