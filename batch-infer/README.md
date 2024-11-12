@@ -19,3 +19,11 @@ colabfold_msas/
     A1L020_P48634.a3m
 colabfold_predictions/
 ```
+
+Table to keep track of AlphaFold3 and related co-folding methods
+| Name       | Repo    | Comments
+| ---------- | ------- | --------------------------------------
+| AlphaFold3 | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) |
+| Chai-1   | [chaidiscovery/chai-lab](https://github.com/chaidiscovery/chai-lab)
+| HelixFold | [PaddlePaddle/PaddleHelix](https://github.com/PaddlePaddle/PaddleHelix/tree/dev/apps/protein_folding/helixfold)
+| Protenix | [bytedance/Protenix](https://github.com/bytedance/Protenix) |
