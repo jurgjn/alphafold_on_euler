@@ -3,32 +3,40 @@ From: nvidia/cuda:11.8.0-base-ubuntu22.04
 Stage: spython-base
 
 %files
-colabfold.yml ./
+    colabfold.yml ./
+
 %post
-CUDA_VERSION=11.8.0
-COLABFOLD_VERSION=1.5.5
+    CUDA_VERSION=11.8.0
+    COLABFOLD_VERSION=1.5.5
 
+    apt-get update && apt-get install -y wget git cuda-nvcc-$(echo $CUDA_VERSION | cut -d'.' -f1,2 | tr '.' '-') --no-install-recommends --no-install-suggests && rm -rf /var/lib/apt/lists/* && \
+    wget -qnc https://github.com/conda-forge/miniforge/releases/download/23.11.0-0/Mambaforge-23.11.0-0-Linux-x86_64.sh && \
+    bash Mambaforge-23.11.0-0-Linux-x86_64.sh -bfp /usr/local && \
+    mamba config --set auto_update_conda false && \
+    rm -f Mambaforge-23.11.0-0-Linux-x86_64.sh && \
+    CONDA_OVERRIDE_CUDA=$(echo $CUDA_VERSION | cut -d'.' -f1,2) mamba env create -f colabfold.yml && \
+    mamba clean -afy
 
-apt-get update && apt-get install -y wget git cuda-nvcc-$(echo $CUDA_VERSION | cut -d'.' -f1,2 | tr '.' '-') --no-install-recommends --no-install-suggests && rm -rf /var/lib/apt/lists/* && \
-wget -qnc https://github.com/conda-forge/miniforge/releases/download/23.11.0-0/Mambaforge-23.11.0-0-Linux-x86_64.sh && \
-bash Mambaforge-23.11.0-0-Linux-x86_64.sh -bfp /usr/local && \
-mamba config --set auto_update_conda false && \
-rm -f Mambaforge-23.11.0-0-Linux-x86_64.sh && \
-CONDA_OVERRIDE_CUDA=$(echo $CUDA_VERSION | cut -d'.' -f1,2) mamba env create -f colabfold.yml && \
-mamba clean -afy
+    PATH=/usr/local/envs/colabfold/bin:$PATH
+    MPLBACKEND=Agg
 
-PATH=/usr/local/envs/colabfold/bin:$PATH
-MPLBACKEND=Agg
+    # VOLUME cache
+    MPLCONFIGDIR=/cache
+    XDG_CACHE_HOME=/cache
 
-# VOLUME cache
-MPLCONFIGDIR=/cache
-XDG_CACHE_HOME=/cache
+    # https://github.com/apptainer/singularity/issues/5075
+    #echo ". /usr/local/conda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
+    #echo "conda activate $(head -n 1 colabfold.yml | cut -f 2 -d ' ')" >> /etc/bash.bashrc
+
 %environment
-export PATH=/usr/local/envs/colabfold/bin:$PATH
-export MPLBACKEND=Agg
-export MPLCONFIGDIR=/cache
-export XDG_CACHE_HOME=/cache
+    export PATH=/usr/local/envs/colabfold/bin:$PATH
+    export MPLBACKEND=Agg
+    export MPLCONFIGDIR=/cache
+    export XDG_CACHE_HOME=/cache
+
+    # https://github.com/apptainer/singularity/issues/5075
+    #export SINGULARITY_SHELL=/bin/bash
+
 %runscript
-exec /bin/bash "$@"
-%startscript
-exec /bin/bash "$@"
+    #https://stackoverflow.com/questions/54678805/containerize-a-conda-environment-in-a-singularity-container
+    exec /usr/local/envs/colabfold/bin/"$@"
