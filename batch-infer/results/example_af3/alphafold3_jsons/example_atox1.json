@@ -1,0 +1,14 @@
+{
+    "name": "example_atox1",
+    "sequences": [
+      {
+        "protein": {
+          "id": "A",
+          "sequence": "MPKHEFSVDMTCGGCAEAVSRVLNKLGGVKYDIDLPNKKVCIESEHSMDTLLATLKKTGKTVSYLGLE"
+        }
+      }
+    ],
+    "modelSeeds": [1],
+    "dialect": "alphafold3",
+    "version": 1
+  }
