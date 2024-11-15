@@ -1,4 +1,9 @@
 
+import glob, functools, json, os, os.path, pandas as pd
+from pprint import pprint
+
+configfile: 'config.yaml'
+
 def uf(x):
     return '{:,}'.format(x)
 
@@ -59,9 +64,9 @@ def printlenq(frame, q, *args, **kwargs):
 #        "'--gpus=1 --gres=gpumem%3A40g'",
 #    ][attempt - 1]
 
-def software_path(path):
+def root_path(path):
     """
     https://snakemake.readthedocs.io/en/stable/project_info/faq.html#how-does-snakemake-interpret-relative-paths
     https://github.com/snakemake/snakemake/issues/1805
     """
-    return os.path.join(os.path.abspath(f'{workflow.basedir}/..'), 'software', path)
+    return os.path.join(os.path.abspath(f'{workflow.basedir}/../..'), path)

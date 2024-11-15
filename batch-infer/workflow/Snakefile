@@ -1,10 +1,7 @@
 
-import glob, functools, json, os, os.path, pandas as pd
-from pprint import pprint
 
-#configfile: 'config/config.yaml'
-
-include: 'rules/common.smk'
-include: 'rules/colabfold.smk'
-include: 'rules/helixfold3.smk'
+#include: 'rules/common.smk'
+#include: 'rules/alphafold3.smk'
+#include: 'rules/colabfold.smk'
+#include: 'rules/helixfold3.smk'
 #include: 'rules/openfold.smk'
