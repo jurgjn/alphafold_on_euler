@@ -1,4 +1,11 @@
 
+Docker images:
+````
+cd software/colabfold
+singularity pull docker://ghcr.io/sokrypton/colabfold:1.5.3-cuda11.8.0
+singularity pull docker://ghcr.io/sokrypton/colabfold:1.5.5-cuda11.8.0
+```
+
 Set up colabfold sequence databases:
 - start with example from [here](https://colabfold.mmseqs.com)
 - disable indexing with `MMSEQS_NO_INDEX=1` as in [here](https://github.com/sokrypton/ColabFold/blob/main/README.md)

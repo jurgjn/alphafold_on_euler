@@ -11,7 +11,7 @@ rule alphafold3_msas:
     input:
         json = 'alphafold3_jsons/{id}.json',
     output:
-        json = 'alphafold3_msas/{id}/{id}_data.json',
+        json = 'alphafold3_msas/{id}_data.json',
     params:
         # bind paths
         af_input = '--bind alphafold3_jsons:/root/af_input',
@@ -39,11 +39,13 @@ rule alphafold3_msas:
                 {params.model_dir} \
                 {params.db_dir} \
                 {params.xtra_args}'
+        mv alphafold3_msas/{wildcards.id}/{wildcards.id}_data.json alphafold3_msas/{wildcards.id}_data.json
+        rm -rf alphafold3_msas/{wildcards.id}
     """
 
 rule alphafold3_predictions:
     input:
-        json = expand('alphafold3_msas/{id}/{id}_data.json', id=ids),
+        json = expand('alphafold3_msas/{id}_data.json', id=ids),
     output:
         cifs = expand('alphafold3_predictions/{id}/{id}_model.cif', id=ids),
     params:

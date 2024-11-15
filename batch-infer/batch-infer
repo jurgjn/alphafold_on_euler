@@ -26,7 +26,10 @@ cat - <<EOF
 #SBATCH --time=7-00:00:00
 #SBATCH --output=$LOGS_DATE/$JOBNAME-%j.txt
 module load stack/2024-06 python/3.11.6 eth_proxy
-source .venv/bin/activate
-snakemake $1_all --profile=$PROFILE --directory $2 --rerun-triggers input $3
+if [ ! -f software/venvs/batch-infer-venv/bin/activate ]; then
+    software/smk-simple-slurm-eu/venv-create.sh software/venvs/batch-infer-venv
+fi
+source software/venvs/batch-infer-venv/bin/activate
+snakemake $1 --snakefile workflow/rules/$1.smk --profile=$PROFILE --workflow-profile=workflow/profiles/default --directory $2 --rerun-triggers input $3
 myjobs -j \$SLURM_JOB_ID
 EOF
