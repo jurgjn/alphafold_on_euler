@@ -21,6 +21,8 @@
 #     slurm_extra: "'--gpus=rtx_4090%3A1 --gres=gpumem%3A24g'"
 #
 set-threads:
+  - alphafold3_msas=8
+  - alphafold3_predictions=4
   - colabfold_msas=24
   - colabfold_predictions=1
   - helixfold3_run_infer=4
@@ -29,6 +31,18 @@ set-threads:
   - openfold_run_unit_tests=4
   - openfold_setup=4
 set-resources:
+  alphafold3_msas:
+    runtime: 4h
+    mem_mb: 65536
+    disk_mb: 65536
+  alphafold3_predictions:
+    runtime: 4h
+    mem_mb: 65536
+    disk_mb: 65536
+    slurm_extra: "'--gpus=1 --gres=gpumem%40g'"
+    #mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    #disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
+    #slurm_extra: f"{['--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
   colabfold_msas:
     runtime: 7d
     mem_mb: 196608
@@ -40,10 +54,6 @@ set-resources:
     mem_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
     disk_mb: f"{[49152, 65536, 65536, 65536, 98304][attempt - 1]}"
     slurm_extra: f"{['--gpus=1 --gres=gpumem%11g', '--gpus=1 --gres=gpumem%24g', '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g'][attempt - 1]}"
-  colabfold_setup_databases:
-    runtime: 3d
-    mem_mb: 131072
-    disk_mb: 131072
   helixfold3_run_infer:
     runtime: 4h
     mem_mb: 65536
@@ -58,18 +68,19 @@ set-resources:
     mem_mb: 65536
     disk_mb: 65536
     slurm_extra: f"{[ '--gpus=1 --gres=gpumem%32g', '--gpus=1 --gres=gpumem%40g', '--gpus=1 --gres=gpumem%80g', ][attempt - 1]}"
-  openfold_run_unit_tests:
-    runtime: 1h
-    mem_mb: 131072
-    disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%11g'"
-  openfold_setup:
-    runtime: 1h
-    mem_mb: 131072
-    disk_mb: 131072
-    slurm_extra: "'--gpus=1 --gres=gpumem%11g'"
-use-conda: True
+#use-conda: True
 use-envmodules: True
-use-singularity: True
-singularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
+#use-singularity: True
+#ingularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
 restart-times: 0
+# Set up `fs` storage plugin to have rsync to/from local scratch as the default I/O pattern
+# https://scicomp.ethz.ch/wiki/Using_local_scratch
+# https://snakemake.github.io/snakemake-plugin-catalog/plugins/storage/fs.html
+#default-storage-provider: fs
+#local-storage-prefix: /cluster/scratch/$USER
+#remote-job-local-storage-prefix: /scratch/tmp.$SLURM_JOBID.$USER
+#shared-fs-usage:
+#  - persistence
+#  - software-deployment
+#  - sources
+#  - source-cache
