@@ -14,14 +14,15 @@
 - Mount `/tmp/` on the Docker image to local scratch (used during the MSA step for temporary storage)
 - Set up persistent compilation cache (on global scratch?) with `--jax_compilation_cache_dir`; this may have to depend on the GPU model?
 - Use local scratch for input/output (instead of current directory)
-- Non-A100 GPUs with `--flash_attention_implementation=xla`?: tried running the example from README.md (“2PV7”) on a lower-end GPU with  (described in performance.md), and on an A100 GPU without that option. The former finished without errors, but the output was noise (something similar to 100% spaghetti with AlphaFold2). The latter finished with visually compelling output.
+- Some non-A100 GPUs requiring `--flash_attention_implementation=xla` [produce noise as output](https://github.com/google-deepmind/alphafold3/issues/59#issuecomment-2482720962)
 - There are warnings about a CUDA version mismatch (12.6 vs 12.2) although AF3 still finishes with a reasonable structure (at least on an A100?)..
 
 ---
 Table to keep track of AlphaFold3 and related co-folding methods
-| Name       | Repo    | Comments
+| Name       | Repo    | Comments |
 | ---------- | ------- | --------------------------------------
 | AlphaFold3 | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) |
-| Chai-1   | [chaidiscovery/chai-lab](https://github.com/chaidiscovery/chai-lab)
-| HelixFold | [PaddlePaddle/PaddleHelix](https://github.com/PaddlePaddle/PaddleHelix/tree/dev/apps/protein_folding/helixfold)
+| Boltz-1 | [jwohlwend/boltz](https://github.com/jwohlwend/boltz) |
+| Chai-1   | [chaidiscovery/chai-lab](https://github.com/chaidiscovery/chai-lab) |
+| HelixFold | [PaddlePaddle/PaddleHelix](https://github.com/PaddlePaddle/PaddleHelix/tree/dev/apps/protein_folding/helixfold) |
 | Protenix | [bytedance/Protenix](https://github.com/bytedance/Protenix) |
