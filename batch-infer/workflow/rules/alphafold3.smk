@@ -1,4 +1,8 @@
 
+wildcard_constraints:
+    rule = r'[^\W0-9]\w*', # https://stackoverflow.com/questions/49100678/regex-matching-unicode-variable-names
+    id = r'[^\W0-9]\w*',
+
 include: 'common.smk'
 
 ids, = glob_wildcards('alphafold3_jsons/{id}.json')
@@ -43,6 +47,7 @@ rule alphafold3_msas:
         rm -rf alphafold3_msas/{wildcards.id}
     """
 
+
 rule alphafold3_predictions:
     input:
         json = expand('alphafold3_msas/{id}_data.json', id=ids),
@@ -76,7 +81,6 @@ rule alphafold3_predictions:
                 {params.db_dir} \
                 {params.xtra_args}'
     """
-
 
 rule alphafold3:
     input:
