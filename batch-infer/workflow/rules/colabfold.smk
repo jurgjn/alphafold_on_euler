@@ -10,17 +10,17 @@ Colabfold adapted to euler:
 [Running ColabFold in Docker](https://github.com/sokrypton/ColabFold/wiki/Running-ColabFold-in-Docker)
 """
 
-localrules: colabfold_docker
-rule colabfold_docker:
-    """
-    Download colabfold docker image & convert to Singularity:
-        https://github.com/sokrypton/ColabFold/wiki/Running-ColabFold-in-Docker
-    """
-    output: software_path('colabfold/colabfold_1.5.5-cuda11.8.0.sif')
-    shell: """
-        cd software/colabfold
-        singularity pull docker://ghcr.io/sokrypton/colabfold:1.5.5-cuda11.8.0
-    """
+#localrules: colabfold_docker
+#rule colabfold_docker:
+#    """
+#    Download colabfold docker image & convert to Singularity:
+#        https://github.com/sokrypton/ColabFold/wiki/Running-ColabFold-in-Docker
+#    """
+#    output: software_path('colabfold/colabfold_1.5.5-cuda11.8.0.sif')
+#    shell: """
+#        cd software/colabfold
+#        singularity pull docker://ghcr.io/sokrypton/colabfold:1.5.5-cuda11.8.0
+#    """
 
 localrules: colabfold_cache
 rule colabfold_cache:
@@ -31,7 +31,7 @@ rule colabfold_cache:
     shell: """
         mkdir -p {output}
         singularity run -B {output}:/cache \
-            {rules.colabfold_docker.output} \
+            colabfold.sif  \
             python -m colabfold.download
     """
 
@@ -57,7 +57,7 @@ rule colabfold_setup_databases:
         #wget https://raw.githubusercontent.com/sokrypton/ColabFold/main/setup_databases.sh
         #chmod +x setup_databases.sh
         mkdir -p database
-        singularity exec -B $(pwd):/work --env MMSEQS_NO_INDEX=1 colabfold_1.5.5-cuda11.8.0.sif ./setup_databases.sh database/
+        singularity exec -B $(pwd):/work --env MMSEQS_NO_INDEX=1 colabfold.sif ./setup_databases.sh database/
         myjobs -j $SLURM_JOB_ID
     """
 
@@ -72,7 +72,7 @@ rule colabfold_msas:
     """
     input:
         csv = 'colabfold_input.csv',
-        docker = ancient(rules.colabfold_docker.output),
+        docker = ancient(software_path('test_dockerfile/colabfold.sif')),
         databases = ancient(rules.colabfold_setup_databases.output.dir),
     output:
         msas = directory('colabfold_msas'),
@@ -81,7 +81,7 @@ rule colabfold_msas:
         mkdir -p {output.msas}
         echo {rule}: Running colabfold_search
         singularity run -B $(pwd):/work -B {input.databases}:/databases {input.docker} \
-            colabfold_search --threads {threads} /work/{input.csv} /databases /work/{output.msas}
+            colabfold_search --use-templates 1 --db2 pdb100_230517 --threads {threads} /work/{input.csv} /databases /work/{output.msas}
         myjobs -j $SLURM_JOB_ID
     """
 
@@ -109,11 +109,11 @@ def colabfold_stats(max_nbatches=200):
     printlenq(df_, 'sequence_len_check & a3m_isfile', 'alignments finished')
     printlenq(df_, 'sequence_len_check & done_isfile', 'structures finished')
 
-    df_['weight'] = df_['sequence_len'] ** 2
-    df_['weight'] = df_['weight'] / df_['weight'].sum()
-    df_['batch_id'] = pd.cut(df_['weight'].cumsum(), bins=max_nbatches, labels=False).rank().astype(int)
-    print('Number of sequences per batch:', df_['batch_id'].value_counts())
-    print('Effort per batch:', df_.groupby('batch_id')['weight'].sum())
+    #df_['weight'] = df_['sequence_len'] ** 2
+    #df_['weight'] = df_['weight'] / df_['weight'].sum()
+    #df_['batch_id'] = pd.cut(df_['weight'].cumsum(), bins=max_nbatches, labels=False).rank().astype(int)
+    #print('Number of sequences per batch:', df_['batch_id'].value_counts())
+    #print('Effort per batch:', df_.groupby('batch_id')['weight'].sum())
     return df_
 
 localrules: colabfold_predictions_todo
@@ -129,13 +129,18 @@ checkpoint colabfold_predictions_todo:
     params:
         nrows_max = None,
     run:
-        df_ = colabfold_stats()#.query('sequence_len_check').copy()
-        # Group into batches of approx equal size by weighing individual sequences by square of the weight
+        df_ = colabfold_stats()
         os.makedirs(output.dir, exist_ok=True)
-        for batch_id, df_batch in df_.groupby('batch_id'):
-            #if (params.batch_id_max is None) or (batch_id < params.batch_id_max):
-            fp_ = os.path.join(output.dir, f'batch{batch_id}.txt')
-            df_batch['a3m'].head(params.nrows_max).to_csv(fp_, index=False, header=False)
+        for i, r in df_.iterrows():
+            pair = r["id"]
+            fp_ = os.path.join(output.dir, f'{pair}.txt')
+            #df_pair = r.to_frame().T
+            #df_pair['a3m'].to_csv(fp_, index=False)
+            a3m_file = r['a3m'] # colabfold_msas/FGFR1_FGFR2.a3m
+            m8_file = f'colabfold_msas/{pair}_pdb100_230517.m8'
+            with open(fp_, 'w') as f:
+                f.write(f'{a3m_file}\n{m8_file}')
+
 
 rule colabfold_predictions:
     """
@@ -143,11 +148,12 @@ rule colabfold_predictions:
     """
     input:
         msas = 'colabfold_msas',
-        todo = 'colabfold_predictions_todo/batch{batch_id}.txt',
-        docker = ancient(rules.colabfold_docker.output),
+        todo = 'colabfold_predictions_todo/{pair_id}.txt', # CHANGED
+        docker = ancient(software_path('test_dockerfile/colabfold.sif')),
         cache = ancient(rules.colabfold_cache.output),
+        database_dir = ancient(rules.colabfold_setup_databases.output.dir), # CHANGED
     output:
-        done = 'colabfold_predictions_done/batch{batch_id}.txt',
+        done = 'colabfold_predictions_done/{pair_id}.txt', # CHANGED
     params:
         nvidia_smi = f'{workflow.basedir}/scripts/nvidia-smi-log',
     envmodules:
@@ -159,8 +165,8 @@ rule colabfold_predictions:
         stdbuf -i0 -o0 -e0 {params.nvidia_smi} &
         PID_NVIDIA_SMI=$!
         echo {rule}: Running colabfold_batch under singularity:
-        singularity run --nv -B {input.cache}:/cache -B $TMPDIR:/work {input.docker} \
-            colabfold_batch /work/colabfold_msas /work/colabfold_predictions
+        singularity run --nv -B {input.database_dir}:/databases -B {input.cache}:/cache -B $TMPDIR:/work {input.docker} \
+            colabfold_batch --num-recycle {config[num_recycle]} --num-models {config[num_models]} --num-seeds {config[num_seeds]} --random-seed {config[random_seed]} --templates --pdb-hit-file /work/colabfold_msas/{wildcards.pair_id}_pdb100_230517.m8 --local-pdb-path /databases/pdb/divided /work/colabfold_msas/{wildcards.pair_id}.a3m /work/colabfold_predictions/{wildcards.pair_id}
         COLABFOLD_EXIT=$?
         echo {rule}: colabfold_batch finished with exit code "$COLABFOLD_EXIT"
         echo {rule}: Killing nvidia_smi with pid "$PID_NVIDIA_SMI":
@@ -180,7 +186,7 @@ rule colabfold_predictions:
 def colabfold_all_input(wildcards):
     # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution
     checkpoint_output = checkpoints.colabfold_predictions_todo.get(**wildcards).output.dir
-    return expand('colabfold_predictions_done/batch{batch_id}.txt', batch_id=glob_wildcards('colabfold_predictions_todo/batch{batch_id}.txt').batch_id)
+    return expand('colabfold_predictions_done/{pair_id}.txt', pair_id=glob_wildcards('colabfold_predictions_todo/{pair_id}.txt').pair_id)
 
 localrules: colabfold_all
 rule colabfold_all:

@@ -30,6 +30,10 @@ if [ ! -f software/venvs/batch-infer-venv/bin/activate ]; then
     software/smk-simple-slurm-eu/venv-create.sh software/venvs/batch-infer-venv
 fi
 source software/venvs/batch-infer-venv/bin/activate
-snakemake $1 --snakefile workflow/rules/$1.smk --profile=$PROFILE --workflow-profile=workflow/profiles/default --directory $2 --rerun-triggers input $3
+if [ $1 == "colabfold" ]; then
+    snakemake $1_all --profile=$PROFILE --directory $2 --configfile $2/config.yml --rerun-triggers input $3
+else
+    snakemake $1 --snakefile workflow/rules/$1.smk --profile=$PROFILE --workflow-profile=workflow/profiles/default --directory $2 --rerun-triggers input $3
+fi
 myjobs -j \$SLURM_JOB_ID
 EOF

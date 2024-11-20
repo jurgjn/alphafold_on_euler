@@ -1,6 +1,5 @@
 name: colabfold
 channels:
-- defaults
 - conda-forge
 - bioconda
 dependencies: # From: https://github.com/bioconda/bioconda-recipes/blob/master/recipes/colabfold/meta.yaml
@@ -21,7 +20,7 @@ dependencies: # From: https://github.com/bioconda/bioconda-recipes/blob/master/r
 - dm-haiku >=0.0.12
 - biopython <=1.82
 - jax >=0.4.23,<0.4.26
-- jaxlib >=0.4.23,<0.4.26
+- jaxlib=*=cuda*  #=*=cuda118*  #>=0.4.23,<0.4.26
 - tensorflow-base >=2.12.1=cpu*
 - mmseqs2 >=15.6f452
 - kalign2 >=2.04
