@@ -72,7 +72,7 @@ rule colabfold_msas:
     """
     input:
         csv = 'colabfold_input.csv',
-        docker = ancient(software_path('test_dockerfile/colabfold.sif')),
+        docker = ancient(software_path('colabfold_latest/colabfold.sif')),
         databases = ancient(rules.colabfold_setup_databases.output.dir),
     output:
         msas = directory('colabfold_msas'),
@@ -149,7 +149,7 @@ rule colabfold_predictions:
     input:
         msas = 'colabfold_msas',
         todo = 'colabfold_predictions_todo/{pair_id}.txt', # CHANGED
-        docker = ancient(software_path('test_dockerfile/colabfold.sif')),
+        docker = ancient(software_path('colabfold-latest/colabfold.sif')),
         cache = ancient(rules.colabfold_cache.output),
         database_dir = ancient(rules.colabfold_setup_databases.output.dir), # CHANGED
     output:
