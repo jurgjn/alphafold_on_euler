@@ -25,4 +25,5 @@ Table to keep track of AlphaFold3 and related co-folding methods
 | Boltz-1 | [jwohlwend/boltz](https://github.com/jwohlwend/boltz) |
 | Chai-1   | [chaidiscovery/chai-lab](https://github.com/chaidiscovery/chai-lab) |
 | HelixFold | [PaddlePaddle/PaddleHelix](https://github.com/PaddlePaddle/PaddleHelix/tree/dev/apps/protein_folding/helixfold) |
+| OpenFold3 | [(TBD)](https://bsky.app/profile/moalquraishi.bsky.social/post/3lbeqspkunc2w) | 
 | Protenix | [bytedance/Protenix](https://github.com/bytedance/Protenix) |
