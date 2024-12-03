@@ -32,11 +32,11 @@ set-threads:
   - openfold_setup=4
 set-resources:
   alphafold3_msas:
-    runtime: 4h
+    runtime: f"{['4h', '1d', '3d', '1w'][attempt - 1]}"
     mem_mb: 65536
     disk_mb: 65536
   alphafold3_predictions:
-    runtime: 4h
+    runtime: 1d
     mem_mb: 65536
     disk_mb: 65536
     slurm_extra: "'--gpus=1 --gres=gpumem%40g'"
@@ -112,7 +112,7 @@ set-resources:
 use-envmodules: True
 #use-singularity: True
 #ingularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
-restart-times: 0
+restart-times: 2
 # Set up `fs` storage plugin to have rsync to/from local scratch as the default I/O pattern
 # https://scicomp.ethz.ch/wiki/Using_local_scratch
 # https://snakemake.github.io/snakemake-plugin-catalog/plugins/storage/fs.html
