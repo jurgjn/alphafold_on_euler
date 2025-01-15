@@ -1,0 +1,29 @@
+https://storage.googleapis.com/alphafold-databases/v3.0
+/cluster/work/beltrao/jjaenes/24.11.11_af3_databases
+Start Fetching and Untarring 'pdb_2022_09_28_mmcif_files.tar'
+Job information
+ Job ID                          : 20721265
+ Job name                        : 25.01.13_refetch_mmcifs
+ Status                          : RUNNING
+ Running on node                 : eu-g9-039-4
+ User                            : jjaenes
+ Shareholder group               : es_biol
+ Slurm partition (queue)         : normal.24h
+ Command                         : sbatch
+ Working directory               : /cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/batch-infer/software/alphafold3
+Requested resources
+ Requested runtime               : 1-00:00:00
+ Requested cores (total)         : 1
+ Requested nodes                 : 1
+ Requested memory (total)        : 16384 MiB
+Job history
+ Submitted at                    : 2025-01-13T16:50:15
+ Started at                      : 2025-01-13T16:50:16
+ Queue waiting time              : 1 s 
+Resource usage
+ Wall-clock                      : 01:14:49
+ Total CPU time                  : 00:28:24
+ CPU utilization                 : 37.95%
+ Total resident memory           : 15647.29 MiB
+ Resident memory utilization     : 95.50%
+
