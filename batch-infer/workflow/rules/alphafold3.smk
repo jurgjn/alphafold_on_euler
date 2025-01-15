@@ -1,7 +1,7 @@
 
 wildcard_constraints:
-    rule = r'[^\W0-9]\w*', # https://stackoverflow.com/questions/49100678/regex-matching-unicode-variable-names
-    id = r'[^\W0-9]\w*',
+    rule = r'[^\W0-9](\w|_)*', # https://stackoverflow.com/questions/49100678/regex-matching-unicode-variable-names
+    id = r'[^\W0-9](\w|\-|_)*',
 
 include: 'common.smk'
 
@@ -61,7 +61,7 @@ rule alphafold3_predictions:
     params:
         # bind paths
         af_input = '--bind alphafold3_msas:/root/af_input',
-        af_output = '--bind {rule}:/root/af_output',
+        af_output = lambda wildcards: '--bind {rule}:/root/af_output',
         models = f'--bind {config["alphafold3_models"]}:/root/models',
         databases = f'--bind {config["alphafold3_databases"]}:/root/public_databases',
         scripts = f'--bind {root_path("workflow/scripts")}:/app/scripts',
