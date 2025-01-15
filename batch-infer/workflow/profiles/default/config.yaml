@@ -112,7 +112,7 @@ set-resources:
 use-envmodules: True
 #use-singularity: True
 #ingularity-args: "--nv -B $HOME,$PROJECT,$WORK,$TMPDIR"
-restart-times: 2
+restart-times: 0
 # Set up `fs` storage plugin to have rsync to/from local scratch as the default I/O pattern
 # https://scicomp.ethz.ch/wiki/Using_local_scratch
 # https://snakemake.github.io/snakemake-plugin-catalog/plugins/storage/fs.html
