@@ -61,9 +61,10 @@ rule alphafold3_predictions:
     params:
         # bind paths
         af_input = '--bind alphafold3_msas:/root/af_input',
-        af_output = '--bind alphafold3_predictions:/root/af_output',
+        af_output = '--bind {rule}:/root/af_output',
         models = f'--bind {config["alphafold3_models"]}:/root/models',
         databases = f'--bind {config["alphafold3_databases"]}:/root/public_databases',
+        scripts = f'--bind {root_path("workflow/scripts")}:/app/scripts',
         docker = root_path(config['alphafold3_docker']),
         # run_alphafold.py
         #json_path = lambda wc: f'--json_path=/root/af_input/{wc.id}/{wc.id}_data.json',
@@ -80,13 +81,13 @@ rule alphafold3_predictions:
         SMKDIR=`pwd`
         echo Running rsync from $SMKDIR to $TMPDIR
         rsync -auv $SMKDIR/ $TMPDIR --include='alphafold3_msas' --include='alphafold3_msas/*_data.json' --exclude='*'
-        mkdir -p $TMPDIR/alphafold3_predictions
+        mkdir -p $TMPDIR/{rule}
         cd $TMPDIR
         echo Contents of $TMPDIR
         ls -l $TMPDIR
         singularity exec --nv {params.docker} sh -c 'nvidia-smi'
-        singularity exec --nv {params.af_input} {params.af_output} {params.models} {params.databases} {params.docker} \
-            sh -c 'python3 /app/alphafold/run_alphafold.py \
+        singularity exec --nv --writable-tmpfs {params.af_input} {params.af_output} {params.models} {params.databases} {params.scripts} {params.docker} \
+            sh -c '/app/scripts/run_alphafold.sh \
                 {params.input_dir} \
                 {params.output_dir} \
                 {params.model_dir} \
@@ -94,7 +95,7 @@ rule alphafold3_predictions:
                 {params.xtra_args}'
         cd -
         echo Running rsync from $TMPDIR to $SMKDIR
-        rsync -auv $TMPDIR/alphafold3_predictions $SMKDIR/
+        rsync -auv $TMPDIR/{rule} $SMKDIR/
     """
 
 rule alphafold3:
