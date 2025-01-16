@@ -1,0 +1,12 @@
+colabfold_input_csv: colabfold_input.csv
+colabfold_search_xargs: ''
+#colabfold_search_xargs: --use-templates 1 --db-load-mode 2 --db2 pdb100_230517
+#colabfold_batch_xargs: '--num-models=1 --num-seeds=1 --use-dropout --zip'
+colabfold_batch_xargs: '--num-models=5 --num-seeds=100 --use-dropout --zip'
+#colabfold_batch_xargs: '--templates --pdb-hit-file ?? --local-pdb-path ??' #https://github.com/sokrypton/ColabFold/issues/563
+colabfold_cache: software/colabfold/cache/
+colabfold_databases: software/colabfold/database/
+#colabfold_docker: software/colabfold/colabfold_1.5.3-cuda11.8.0.sif #https://github.com/sokrypton/ColabFold/issues/568
+colabfold_docker: software/colabfold/colabfold_1.5.5-cuda11.8.0.sif
+#colabfold_docker: software/colabfold/colabfold-c21e1768d18e3608e6e6d99c97134317e7e41c75.sif
+#colabfold_docker: software/colabfold-latest/colabfold-latest.sif
