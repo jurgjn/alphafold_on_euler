@@ -33,7 +33,10 @@ source software/venvs/batch-infer-venv/bin/activate
 if [ $1 == "colabfold" ]; then
     snakemake $1_all --profile=$PROFILE --directory $2 --configfile $2/config.yml --rerun-triggers input $3
 else
-    snakemake $1 --snakefile workflow/rules/$1.smk --profile=$PROFILE --workflow-profile=workflow/profiles/default --directory $2 --rerun-triggers input $3
+    snakemake $1 --snakefile workflow/targets/$1.smk \\
+        --configfile workflow/config/defaults.yaml $2/config.yaml \\
+        --profile=$PROFILE --workflow-profile=workflow/profiles/default \\
+        --directory $2 --rerun-triggers input $3
 fi
 myjobs -j \$SLURM_JOB_ID
 EOF

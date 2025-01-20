@@ -1,5 +1,5 @@
 
-include: 'alphafold3.smk'
+include: '../rules/alphafold3.smk'
 
 use rule alphafold3_predictions as alphafold3_predictions_rtx_2080_ti with:
     output:

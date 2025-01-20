@@ -2,8 +2,6 @@
 import glob, functools, json, os, os.path, pandas as pd
 from pprint import pprint
 
-configfile: 'config.yaml'
-
 def uf(x):
     return '{:,}'.format(x)
 

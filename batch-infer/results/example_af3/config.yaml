@@ -1,4 +1,0 @@
-alphafold3_models: /cluster/work/beltrao/jjaenes/24.11.13_af3_models
-#alphafold3_databases: /cluster/project/alphafold/alphafold3
-alphafold3_databases: /cluster/work/beltrao/jjaenes/24.11.11_af3_databases
-alphafold3_docker: /cluster/project/beltrao/shared/alphafold3/images/alphafold3-ea04034.sif

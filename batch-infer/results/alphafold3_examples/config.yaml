@@ -1,0 +1,3 @@
+# Edit to specify location of your AF3 model weights
+# Override other settings (public databases, docker image, etc) as needed; defaults set in workflow/config/defaults.yaml
+alphafold3_models: /cluster/work/beltrao/jjaenes/24.11.13_af3_models
