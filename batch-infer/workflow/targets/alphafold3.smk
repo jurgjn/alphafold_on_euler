@@ -8,4 +8,4 @@ include: '../rules/alphafold3.smk'
 
 rule alphafold3:
     input:
-        expand('alphafold3_predictions/{id}/{id}_model.cif', id=ids),
+        expand('alphafold3_predictions/{id}/{id}_model.cif.gz', id=ids),

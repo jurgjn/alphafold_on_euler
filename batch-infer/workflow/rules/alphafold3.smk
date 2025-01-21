@@ -1,7 +1,7 @@
 
 wildcard_constraints:
     rule = r'[^\W0-9](\w|_)*', # https://stackoverflow.com/questions/49100678/regex-matching-unicode-variable-names
-    id = r'[^\W0-9](\w|\-|_)*',
+    id = r'(\w|\-|_|\.)*', # https://github.com/google-deepmind/alphafold3/blob/d7758637f3a682c99ddb325869eab9f19361ebcd/src/alphafold3/common/folding_input.py#L1001-L1005
 
 include: 'common.smk'
 
@@ -12,7 +12,7 @@ rule alphafold3_msas:
     input:
         json = 'alphafold3_jsons/{id}.json',
     output:
-        json = 'alphafold3_msas/{id}_data.json',
+        json = 'alphafold3_msas/{id}_data.json.gz',
     params:
         # bind paths
         af_input = '--bind alphafold3_jsons:/root/af_input',
@@ -43,15 +43,16 @@ rule alphafold3_msas:
                 {params.db_dir} \
                 {params.xtra_args}'
         cd -
-        cp $TMPDIR/alphafold3_msas/{wildcards.id}/{wildcards.id}_data.json $SMKDIR/alphafold3_msas/{wildcards.id}_data.json
+        gzip $TMPDIR/alphafold3_msas/{wildcards.id}/{wildcards.id}_data.json
+        cp $TMPDIR/alphafold3_msas/{wildcards.id}/{wildcards.id}_data.json.gz $SMKDIR/alphafold3_msas/{wildcards.id}_data.json.gz
     """
 
 rule alphafold3_predictions:
     # Run AF3 structure prediction on all .json-s
     input:
-        json = expand('alphafold3_msas/{id}_data.json', id=ids),
+        json = expand('alphafold3_msas/{id}_data.json.gz', id=ids),
     output:
-        cifs = expand('alphafold3_predictions/{id}/{id}_model.cif', id=ids),
+        cifs = expand('alphafold3_predictions/{id}/{id}_model.cif.gz', id=ids),
         # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#defining-retries-for-fallible-rules
         # retries: 3
     params:
@@ -76,7 +77,8 @@ rule alphafold3_predictions:
     shell: """
         SMKDIR=`pwd`
         echo Running rsync from $SMKDIR to $TMPDIR
-        rsync -auv $SMKDIR/ $TMPDIR --include='alphafold3_msas' --include='alphafold3_msas/*_data.json' --exclude='*'
+        rsync -auv $SMKDIR/ $TMPDIR --include='alphafold3_msas' --include='alphafold3_msas/*_data.json.gz' --exclude='*'
+        gunzip -r $TMPDIR/alphafold3_msas/
         mkdir -p $TMPDIR/{rule}
         cd $TMPDIR
         echo Contents of $TMPDIR
@@ -90,6 +92,7 @@ rule alphafold3_predictions:
                 {params.db_dir} \
                 {params.xtra_args}'
         cd -
+        gzip -r $TMPDIR/{rule}/
         echo Running rsync from $TMPDIR to $SMKDIR
         rsync -auv $TMPDIR/{rule} $SMKDIR/
     """
