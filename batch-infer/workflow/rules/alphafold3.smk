@@ -30,6 +30,9 @@ rule alphafold3_msas:
         xtra_args = '--norun_inference',
     envmodules:
         'stack/2024-05', 'gcc/13.2.0',
+    # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#defining-retries-for-fallible-rules
+    # Re-attempt (failed) MSAs with increasing runtimes (4h, 1d, 3d)
+    retries: 3
     shell: """
         SMKDIR=`pwd`
         rsync -auq $SMKDIR/ $TMPDIR --include='alphafold3_jsons' --include='{input.json}' --exclude='*'
@@ -54,7 +57,6 @@ rule alphafold3_predictions:
     output:
         cifs = expand('alphafold3_predictions/{id}/{id}_model.cif.gz', id=ids),
         # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#defining-retries-for-fallible-rules
-        # retries: 3
     params:
         # bind paths
         af_input = '--bind alphafold3_msas:/root/af_input',
