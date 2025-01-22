@@ -33,8 +33,8 @@ set-threads:
 set-resources:
   alphafold3_msas:
     runtime: f"{['4h', '1d', '3d', '1w'][attempt - 1]}"
-    mem_mb: 65536
-    disk_mb: 65536
+    mem_mb: f"{[65536, 131072, 131072, 131072][attempt - 1]}"
+    disk_mb: f"{[65536, 131072, 131072, 131072][attempt - 1]}"
   alphafold3_predictions:
     runtime: 1d
     mem_mb: 65536
