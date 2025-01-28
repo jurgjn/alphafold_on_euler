@@ -1,7 +1,7 @@
 
 alphafold3_databases: /cluster/project/alphafold/alphafold3
 #alphafold3_databases: /cluster/work/beltrao/jjaenes/24.11.11_af3_databases
-alphafold3_docker: /cluster/project/beltrao/shared/alphafold3/images/alphafold3.sif
+alphafold3_docker: /cluster/project/beltrao/shared/alphafold3/images/alphafold3-v3.0.1.sif
 
 openfold:
   sequences: /cluster/project/beltrao/jjaenes/22.05.30_alphafold_on_euler/openfold/results/example_MAPK1_DUSP6/MAPK1_DUSP6.txt

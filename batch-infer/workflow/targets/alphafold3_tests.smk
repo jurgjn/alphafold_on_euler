@@ -1,4 +1,6 @@
 
+ids = ['example_2pv7',]
+
 include: '../rules/alphafold3.smk'
 
 use rule alphafold3_predictions as alphafold3_predictions_rtx_2080_ti with:
@@ -128,8 +130,6 @@ use rule alphafold3_predictions as alphafold3_predictions_a100_80gb with:
         model_dir ='--model_dir=/root/models',
         db_dir = '--db_dir=/root/public_databases',
         xtra_args = '--norun_data_pipeline',
-
-ids = ['example_2pv7',]
 
 rule alphafold3_tests:
     input:
