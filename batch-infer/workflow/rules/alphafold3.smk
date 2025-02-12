@@ -77,9 +77,14 @@ rule alphafold3_predictions:
     envmodules:
         'stack/2024-05', 'gcc/13.2.0', 'cuda/12.2.1',
     shell: """
+        TODO_JSONS=$TMPDIR/alphafold_predictions_todo.txt
+        echo "{input.json}" | tr ' ' '\\n' > $TODO_JSONS
+        echo Contents of $TODO_JSONS
+        cat $TODO_JSONS
         SMKDIR=`pwd`
         echo Running rsync from $SMKDIR to $TMPDIR
-        rsync -auv $SMKDIR/ $TMPDIR --include='alphafold3_msas' --include='alphafold3_msas/*_data.json.gz' --exclude='*'
+        rsync -av --files-from $TODO_JSONS ./ $TMPDIR
+        #rsync -auv $SMKDIR/ $TMPDIR --include='alphafold3_msas' --include='alphafold3_msas/*_data.json.gz' --exclude='*'
         gunzip -r $TMPDIR/alphafold3_msas/
         mkdir -p $TMPDIR/{rule}
         cd $TMPDIR
