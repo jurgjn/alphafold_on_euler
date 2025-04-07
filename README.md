@@ -54,7 +54,7 @@ Then submit the resulting script from the working directory as :
 sbatch Ubiquitin.sbatch
 ```
 ### AlphaFold 2.3.1 : setup_run_script_AF2.3.1 folder
-This script works only on the centOS partition on Euler, and this partition is not available on the custer anymore. A legacy system is available by running the `run-centos7` command on the cluster. Unless you know exactly what you are doing, please avoid using this scipt.
+This script works only on the centOS partition on Euler, and this partition is not available on the custer anymore. A legacy system is available by running the `run-centos7` command on the cluster. Unless you know exactly what you are doing, please avoid using this script.
 If older versions of alphafold are needed, please contact cluster support and we will provide them for you.
 
 ```commandline
