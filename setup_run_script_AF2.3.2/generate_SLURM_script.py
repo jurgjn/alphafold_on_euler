@@ -56,7 +56,7 @@ def main():
             RUNTIME = "48:00:00"
 
     if args.model_preset[0:4] == "mult":
-        if 1000 <= cpt_AA <= 2500:
+        if cpt_AA <= 2500:
             GPUMEM = "24g"
             RUNTIME = "48:00:00"
         elif cpt_AA > 2500:
@@ -117,7 +117,16 @@ def parse_arguments():
         required=True,
         help="Paths to a FASTA file",
     )
-
+    parser.add_argument(
+        "--model-preset",
+        choices=["monomer", "monomer_casp14", "monomer_ptm", "multimer"],
+        required=True,
+        default="",
+        help="Choose preset model configuration - the monomer model, the monomer model "
+             "with extra ensembling, monomer model with pTM head, or multimer model (exact options are "
+             "\"monomer\", \"monomer_casp14\", \"monomer_ptm\", \"multimer\"). If in doubt,"
+             "please select the \"monomer\" option as a placeholder.",
+    )
     parser.add_argument(
         "--shareholder",
         "-s",
@@ -142,13 +151,6 @@ def parse_arguments():
         help="Choose preset model configuration - no ensembling with "
         "uniref90 + bfd + uniclust30 (full_dbs), or "
         "8 model ensemblings with uniref90 + bfd + uniclust30 (casp14).",
-    )
-    parser.add_argument(
-        "--model-preset",
-        choices=["monomer", "monomer_casp14", "monomer_ptm", "multimer"],
-        default="",
-        help="Choose preset model configuration - the monomer model, the monomer model "
-        "with extra ensembling, monomer model with pTM head, or multimer model",
     )
     parser.add_argument(
         "--num-multimer-predictions-per-model",

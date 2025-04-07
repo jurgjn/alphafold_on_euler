@@ -30,11 +30,11 @@ python generate_SLURM_script.py --help
 ```
 General usage :
 ```commandline
-python generate_SLURM_script.py -f [path ot fastafile] -o [output/working directory] -s [your share for GPU usage]
+python generate_SLURM_script.py -f [path ot fastafile] -o [output/working directory] -s [your share for GPU usage] --model-preset=[monomer/multimer]
 ```
 A simple example :
 ```commandline
-[nmarounina@eu-login-43 setup_run_script_container]$ python generate_SLURM_script.py -f ../fastafiles/Ubiquitin.fasta -o /cluster/scratch/nmarounina -s es_hpc -c 8 
+[nmarounina@eu-login-43 setup_run_script_container]$ python generate_SLURM_script.py -f ../fastafiles/Ubiquitin.fasta -o /cluster/scratch/nmarounina -s es_hpc -c 8 -model-preset=monomer
 
 Estimate required resources, please adjust as needed in the final script:
 Run time:            04:00:00 (hh:mm:ss)
@@ -54,7 +54,7 @@ Then submit the resulting script from the working directory as :
 sbatch Ubiquitin.sbatch
 ```
 ### AlphaFold 2.3.1 : setup_run_script_AF2.3.1 folder
-This script works only on the centOS partition on Euler, and this partition will be soon phased out. Unless you know exactly what you are doing, please avoid using this scipt.
+This script works only on the centOS partition on Euler, and this partition is not available on the custer anymore. A legacy system is available by running the `run-centos7` command on the cluster. Unless you know exactly what you are doing, please avoid using this scipt.
 If older versions of alphafold are needed, please contact cluster support and we will provide them for you.
 
 ```commandline
