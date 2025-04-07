@@ -6,4 +6,4 @@ include: '../rules/alphafold3_msas.smk'
 
 rule alphafold3_msas_only:
     input:
-        expand('alphafold3_msas/{id}_data.json.gz', id=ids),
+        expand('alphafold3_msas/{id}_data.json.gz', id=ids[:1000]),
