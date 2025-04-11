@@ -4,13 +4,13 @@ include: '../rules/alphafold3_msas.smk'
 
 #ids = []
 #ids = alphafold3_stats().id.tolist()
-ids = pd.read_csv('alphafold3_predictions_batches.tsv', sep='\t').id.tolist()
+ids = pd.read_csv('alphafold3_predbatch.tsv', sep='\t').id.tolist()
 #pprint(ids)
 
 # alphafold3_ids() - return all
 # alphafold3_ids_grouped() - return [['a', 'b', 'c'], ['e', 'f', 'g']]
 
-for batch_id, df_batch in pd.read_csv('alphafold3_predictions_batches.tsv', sep='\t').groupby('batch_id'):
+for batch_id, df_batch in pd.read_csv('alphafold3_predbatch.tsv', sep='\t').groupby('batch_id'):
     #print(batch_id)
     #print(df_batch)
 
@@ -74,7 +74,6 @@ for batch_id, df_batch in pd.read_csv('alphafold3_predictions_batches.tsv', sep=
             rsync -auv $TMPDIR/alphafold3_predictions $SMKDIR/
         """
 
-rule alphafold3_predictions_batches:
+rule alphafold3_predbatch:
     input:
         expand('alphafold3_predictions/{id}/{id}_model.cif.gz', id=ids),
-        #expand('alphafold3_predictions/{id}/{id}_model.cif.gz', id=ids),
