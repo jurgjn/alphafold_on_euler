@@ -1,0 +1,2 @@
+alphafold3_models: /cluster/work/beltrao/jjaenes/24.11.13_af3_models
+alphafold3_docker: /cluster/project/beltrao/shared/alphafold3/images/alphafold3-v3.0.1.sif
