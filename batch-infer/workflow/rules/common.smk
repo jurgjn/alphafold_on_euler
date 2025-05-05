@@ -1,6 +1,8 @@
 
-import glob, functools, json, os, os.path, pandas as pd
+import glob, gzip, functools, json, os, os.path, string
 from pprint import pprint
+
+import pandas as pd
 
 def uf(x):
     return '{:,}'.format(x)
@@ -66,6 +68,8 @@ def root_path(path):
     """
     https://snakemake.readthedocs.io/en/stable/project_info/faq.html#how-does-snakemake-interpret-relative-paths
     https://github.com/snakemake/snakemake/issues/1805
+    #https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#accessing-auxiliary-source-files
+    > This can be achieved by accessing their path via the workflow.source_path, which (a) computes the correct path relative to the current Snakefile such that the file can be accessed from any working directory
     """
     return os.path.join(os.path.abspath(f'{workflow.basedir}/../..'), path)
 
